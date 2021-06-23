@@ -1,14 +1,11 @@
+using Capstone.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Capstone
 {
@@ -24,7 +21,18 @@ namespace Capstone
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var serverVersion = new MariaDbServerVersion(new Version(10, 3, 28));
+
+            services.AddDbContext<ApplicationContext>(opts => opts
+                .UseMySql(Configuration.GetConnectionString("mysql"), serverVersion)
+                .EnableSensitiveDataLogging()
+                .EnableDetailedErrors());
+
             services.AddControllers();
+            services.AddSpaStaticFiles(config =>
+            {
+                config.RootPath = "ClientApp/build";
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -34,6 +42,14 @@ namespace Capstone
             {
                 app.UseDeveloperExceptionPage();
             }
+            else
+            {
+                app.UseExceptionHandler("/Error");
+                app.UseHsts();
+            }
+
+            app.UseStaticFiles();
+            app.UseSpaStaticFiles();
 
             app.UseRouting();
 
