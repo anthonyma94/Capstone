@@ -13,6 +13,7 @@ namespace Capstone
     {
         public static void Main(string[] args)
         {
+            Initialize.InitializeData();
             CreateHostBuilder(args).ConfigureAppConfiguration((hostContext, builder) =>
             {
                 if (hostContext.HostingEnvironment.IsDevelopment())

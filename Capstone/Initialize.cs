@@ -1,6 +1,9 @@
 ﻿using Capstone.Models;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -10,19 +13,8 @@ namespace Capstone
     {
         public static void InitializeData()
         {
-            Store store = new Store
-            {
-                Id = new Guid(),
-                Name = "Test Store"
-            };
-
-            Person person = new Person
-            {
-                Id = new Guid(),
-                FirstName = "Jimmy",
-                LastName = "Chu",
-                Address = "123 Water Street",
-            };
+            Person[] persons = JsonConvert.DeserializeObject<Person[]>(File.ReadAllText("./Models/Samples/SamplePeople.json"));
+            Console.WriteLine(persons.Length);
         }
     }
 }
