@@ -1,44 +1,37 @@
 import React from "react";
-import { Col, Container, Row } from "react-bootstrap";
-import Form from "react-bootstrap/Form";
 import Layout from "./Layout";
+import Input from "./Input";
+import Button from "./Button";
 
 const NewEmployee = () => {
   return (
     <Layout>
-      <>
+      <div className="flex justify-between">
         <h1>Employee Info</h1>
-        <Container fluid>
-          <Form>
-            <Row>
-              <Col>
-                <Form.Group controlId="firstName">
-                  <Form.Label>First Name</Form.Label>
-                  <Form.Control type="text" placeholder="Enter First Name" />
-                </Form.Group>
-              </Col>
-              <Col>
-                <Form.Group controlId="lastName">
-                  <Form.Label>Last Name</Form.Label>
-                  <Form.Control type="text" placeholder="Enter Last Name" />
-                </Form.Group>
-              </Col>
-            </Row>
-            <Row>
-              <Col>
-                <Form.Group controlId="address">
-                  <Form.Label>Address</Form.Label>
-                  <Form.Control type="text" placeholder="Enter Address" />
-                </Form.Group>
-              </Col>
-            </Row>
-            <Row>
-              <Col xs="6" md>
-                <Form.Group controlId="city">
-                  <Form.Label>City</Form.Label>
-                  <Form.Control type="text" placeholder="Enter City" />
-                </Form.Group>
-              </Col>
+        <Button>Save</Button>
+      </div>
+      <form>
+        <div className="grid gap-4 grid-cols-4">
+          <Input className="col-span-2" placeholder="First Name" />
+          <Input className="col-span-2" placeholder="Last Name" />
+          <Input className="col-span-4" placeholder="Address" />
+          <Input className="col-span-2 md:col-span-1" placeholder="City" />
+          <Input className="col-span-2 md:col-span-1" placeholder="Province" />
+          <Input
+            className="col-span-2 md:col-span-1"
+            placeholder="Postal Code"
+          />
+          <Input
+            className="col-span-2 md:col-span-1"
+            placeholder="Phone Number"
+          />
+          <Input className="col-span-2 md:col-span-1" placeholder="Role" />
+          <Input className="col-span-2 md:col-span-1" placeholder="Wage" />
+          <Input className="col-span-2 md:col-span-1" placeholder="Job" />
+          <Input className="col-span-2 md:col-span-1" placeholder="Hours" />
+        </div>
+      </form>
+      {/* <>
               <Col xs="6" md>
                 <Form.Group controlId="province">
                   <Form.Label>Province</Form.Label>
@@ -59,51 +52,7 @@ const NewEmployee = () => {
                   </Form.Control>
                 </Form.Group>
               </Col>
-              <Col xs="6" md>
-                <Form.Group controlId="postal">
-                  <Form.Label>Postal Code</Form.Label>
-                  <Form.Control type="text" placeholder="Enter Postal Code" />
-                </Form.Group>
-              </Col>
-              <Col xs="6" md>
-                <Form.Group controlId="phone">
-                  <Form.Label>Phone Number</Form.Label>
-                  <Form.Control type="text" placeholder="Enter Phone Number" />
-                </Form.Group>
-              </Col>
-            </Row>
-            <Row>
-              <Col xs="6" md>
-                <Form.Group controlId="role">
-                  <Form.Label>Role</Form.Label>
-                  <Form.Control type="text" placeholder="Enter Role" />
-                </Form.Group>
-              </Col>
-              <Col xs="6" md>
-                <Form.Group controlId="wage">
-                  <Form.Label>Hourly Wage</Form.Label>
-                  <Form.Control type="text" placeholder="Enter Hourly Wage" />
-                </Form.Group>
-              </Col>
-              <Col xs="6" md>
-                <Form.Group controlId="job">
-                  <Form.Label>Job Title</Form.Label>
-                  <Form.Control type="text" placeholder="Enter Job Title" />
-                </Form.Group>
-              </Col>
-              <Col xs="6" md>
-                <Form.Group controlId="hours">
-                  <Form.Label>Maximum Weekly Hours</Form.Label>
-                  <Form.Control
-                    type="number"
-                    placeholder="Enter Maximum Weekly Hours"
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-          </Form>
-        </Container>
-      </>
+      </> */}
     </Layout>
   );
 };

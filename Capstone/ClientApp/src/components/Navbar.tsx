@@ -1,21 +1,25 @@
 import React from "react";
-import { Navbar as BootstrapNavbar, Nav } from "react-bootstrap";
 import navLinks from "../assets/navlinks";
-import "../stylesheets/Navbar.scss";
 
 const Navbar = () => {
   return (
-    <BootstrapNavbar>
-      {navLinks
-        .filter((item) => item.includeInNavbar)
-        .map((item) => {
-          return (
-            <Nav.Link key={item.link} href={item.link}>
-              {item.text}
-            </Nav.Link>
-          );
-        })}
-    </BootstrapNavbar>
+    <div className="w-screen px-1 py-2 bg-gradient-to-r from-purple-600 to-red-400 flex justify-center">
+      <nav className="max-w-screen-2xl w-100 flex flex-row justify-center gap-3">
+        {navLinks
+          .filter((item) => item.includeInNavbar)
+          .map((item) => {
+            return (
+              <a
+                className="p-1 text-gray-100 hover:text-gray-600 hover:no-underline  "
+                key={item.link}
+                href={item.link}
+              >
+                {item.text}
+              </a>
+            );
+          })}
+      </nav>
+    </div>
   );
 };
 

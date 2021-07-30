@@ -1,17 +1,20 @@
-import { Button } from "react-bootstrap";
 import Layout from "./components/Layout";
 import Table from "./components/DataTable";
-import "./stylesheets/Employees.scss";
+import axios from "./services/axios";
 import { RowRecord, TableColumn } from "react-data-table-component";
+import IPerson from "./interfaces/Person";
+import { useEffect, useState } from "react";
+import IJobTitle from "./interfaces/JobTitle";
+import Button from "./components/Button";
 
-interface Data {
-  firstName: string;
-  lastName: string;
-  role: string;
-  jobTitle: string;
-  availability: string;
-  maxHours: number;
-}
+// interface Data {
+//   firstName: string;
+//   lastName: string;
+//   role: string;
+//   jobTitle: string;
+//   availability: string;
+//   maxHours: number;
+// }
 
 const columns: TableColumn<RowRecord>[] = [
   {
@@ -36,32 +39,52 @@ const columns: TableColumn<RowRecord>[] = [
   },
   {
     name: "Max Hours",
-    selector: "maxHours",
-  },
-];
-
-const data = [
-  {
-    firstName: "Jack",
-    lastName: "Dorsey",
-    role: "FT",
-    jobTitle: "dev",
-    availability: "always",
-    maxHours: 40,
-    key: 1,
+    selector: "maxWeeklyHours",
   },
 ];
 
 const Employees = () => {
+  const [data, setData] = useState<IPerson[]>([]);
+  useEffect(() => {
+    let mounted = true;
+
+    axios
+      .get("/people")
+      .then((res) => {
+        if (mounted) {
+          const data = (res.data as IPerson[]).map((person) => {
+            let job = person.jobTitle;
+            if (typeof job !== "string") {
+              job = (person.jobTitle as IJobTitle).name;
+            }
+            return {
+              ...person,
+              jobTitle: job,
+            };
+          });
+
+          setData(data);
+        }
+      })
+      .catch((err) => console.error(err));
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
   return (
     <Layout>
-      <>
-        <div className="d-flex justify-content-between">
-          <h1>Employees</h1>
-          <Button href="/newEmployee">Create New</Button>
-        </div>
-        <Table columns={columns} data={data} />
-      </>
+      <div className="flex justify-between">
+        <h1>Employees</h1>
+        <Button href="/newEmployee">Create New</Button>
+      </div>
+      <Table
+        selectableRows
+        selectableRowsNoSelectAll
+        selectableRowsHighlight
+        columns={columns}
+        data={data}
+      />
     </Layout>
   );
 };

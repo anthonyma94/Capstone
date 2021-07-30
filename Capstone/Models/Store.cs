@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -17,8 +18,11 @@ namespace Capstone.Models
     {
         [Required]
         public Store Store { get; set; }
+
+        public List<StoreHourLineItem> StoreHourLineItems { get; set; }
     }
 
+    [Owned]
     public class StoreHourLineItem : BaseEntity
     {
         [Required]

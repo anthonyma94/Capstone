@@ -7,9 +7,15 @@ using System.Threading.Tasks;
 
 namespace Capstone.Repositories
 {
-    public static class PersonRepository
+    public class PersonRepository : BaseRepository<Person>
     {
-        private static ApplicationContext context;
-        private static DbSet<Person> dbSet;
+        public PersonRepository(ApplicationContext context) : base(context)
+        {
+        }
+
+        public override async Task<List<Person>> GetAll()
+        {
+            return await context.Person.Include(x => x.JobTitle).ToListAsync();
+        }
     }
 }

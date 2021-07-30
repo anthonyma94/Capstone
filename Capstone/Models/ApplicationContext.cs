@@ -1,8 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
+using Newtonsoft.Json;
+using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Capstone.Models
 {
@@ -34,6 +33,80 @@ namespace Capstone.Models
         {
             //base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<Schedule>().Property(x => x.IsDefault).HasDefaultValue(false);
+
+            // Job Title
+            JobTitle[] titles = new JobTitle[]
+            {
+                new JobTitle
+                {
+                    Name = "Stock"
+                },
+                new JobTitle
+                {
+                    Name = "Sales"
+                },
+                new JobTitle
+                {
+                    Name = "Cashier"
+                },
+                new JobTitle
+                {
+                    Name = "Manager"
+                },
+            };
+            modelBuilder.Entity<JobTitle>().HasData(titles);
+
+            // Person
+            Person[] persons = JsonConvert.DeserializeObject<Person[]>(File.ReadAllText("./Models/Samples/SamplePeople.json"));
+
+            int maxPeople = persons.Length;
+            int maxSales = (int)(maxPeople * 0.5);
+            int maxStock = (int)(maxPeople * 0.2);
+            int maxCash = (int)(maxPeople * 0.2);
+            int maxManager = (int)(maxPeople * 0.1);
+
+            for (int i = 0; i < persons.Length; i++)
+            {
+                var person = persons[i];
+                if (maxSales > 0)
+                {
+                    person.JobTitle = titles.First(x => x.Name == "Sales");
+                    maxSales--;
+                }
+                else if (maxStock > 0)
+                {
+                    person.JobTitle = titles.First(x => x.Name == "Stock");
+                    maxStock--;
+                }
+                else if (maxCash > 0)
+                {
+                    person.JobTitle = titles.First(x => x.Name == "Cashier");
+                    maxCash--;
+                }
+                else
+                {
+                    person.JobTitle = titles.First(x => x.Name == "Manager");
+                    maxManager--;
+                }
+                persons[i] = person;
+            }
+
+            modelBuilder.Entity<Person>().HasData(persons.Select(x => new
+            {
+                Id = x.Id,
+                FirstName = x.FirstName,
+                LastName = x.LastName,
+                Address = x.Address,
+                Province = x.Province,
+                Postal = x.Postal,
+                Role = x.Role,
+                Pay = x.Pay,
+                Phone = x.Phone,
+                Username = x.Username,
+                Password = x.Password,
+                MaxWeeklyHours = x.MaxWeeklyHours,
+                JobTitleId = x.JobTitle.Id
+            }));
         }
     }
 }

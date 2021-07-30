@@ -3,14 +3,16 @@ using System;
 using Capstone.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Capstone.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20210726155445_add-jobtitle")]
+    partial class addjobtitle
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -97,22 +99,22 @@ namespace Capstone.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("30b85d3f-53dc-488b-96ce-f06de7da1acc"),
+                            Id = new Guid("3b7dc549-d2ec-4b96-be4d-db7d556597b7"),
                             Name = "Stock"
                         },
                         new
                         {
-                            Id = new Guid("028f3848-ba2c-4fc6-ad86-eba0f099cfd3"),
+                            Id = new Guid("ba85b248-b160-494c-9027-7e3f344979a0"),
                             Name = "Sales"
                         },
                         new
                         {
-                            Id = new Guid("96239770-bee6-4245-9933-3bdb1f9daa81"),
+                            Id = new Guid("f326dbf1-ea74-40b5-91f6-cbc742e3d294"),
                             Name = "Cashier"
                         },
                         new
                         {
-                            Id = new Guid("31bbfeb2-c60e-497b-9532-3cf2f90a4939"),
+                            Id = new Guid("a14cebc4-d139-4aff-aa00-dafa650db24c"),
                             Name = "Manager"
                         });
                 });
@@ -175,10 +177,10 @@ namespace Capstone.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("08dbe323-63bf-4dd7-aa01-471ba5eb0897"),
+                            Id = new Guid("eed7b862-526a-4755-853d-b8cd5b90dd19"),
                             Address = "8889 Milwaukee Way",
                             FirstName = "Brynna",
-                            JobTitleId = new Guid("028f3848-ba2c-4fc6-ad86-eba0f099cfd3"),
+                            JobTitleId = new Guid("ba85b248-b160-494c-9027-7e3f344979a0"),
                             LastName = "Celloni",
                             MaxWeeklyHours = 40,
                             Pay = 14.05m,
@@ -189,10 +191,10 @@ namespace Capstone.Migrations
                         },
                         new
                         {
-                            Id = new Guid("bbf290bd-e028-4405-8323-f9985bb8db0c"),
+                            Id = new Guid("dedf1fb2-e39a-4f3b-8947-b3fc437dacb1"),
                             Address = "8262 Coleman Alley",
                             FirstName = "Cobb",
-                            JobTitleId = new Guid("028f3848-ba2c-4fc6-ad86-eba0f099cfd3"),
+                            JobTitleId = new Guid("ba85b248-b160-494c-9027-7e3f344979a0"),
                             LastName = "Dudden",
                             MaxWeeklyHours = 12,
                             Pay = 18.88m,
@@ -203,10 +205,10 @@ namespace Capstone.Migrations
                         },
                         new
                         {
-                            Id = new Guid("c6628c92-8bed-4d53-a374-66f1edde67ec"),
+                            Id = new Guid("59fb091a-afa7-41ea-a05c-e6d904429caf"),
                             Address = "22011 Mosinee Parkway",
                             FirstName = "Mick",
-                            JobTitleId = new Guid("028f3848-ba2c-4fc6-ad86-eba0f099cfd3"),
+                            JobTitleId = new Guid("ba85b248-b160-494c-9027-7e3f344979a0"),
                             LastName = "Neiland",
                             MaxWeeklyHours = 7,
                             Pay = 19.27m,
@@ -217,10 +219,10 @@ namespace Capstone.Migrations
                         },
                         new
                         {
-                            Id = new Guid("05c3ab16-57e1-4dae-bb29-270941045529"),
+                            Id = new Guid("9a72a098-112a-4865-bbac-ae1139800ae5"),
                             Address = "71524 Reindahl Drive",
                             FirstName = "Renaud",
-                            JobTitleId = new Guid("028f3848-ba2c-4fc6-ad86-eba0f099cfd3"),
+                            JobTitleId = new Guid("ba85b248-b160-494c-9027-7e3f344979a0"),
                             LastName = "Trott",
                             MaxWeeklyHours = 16,
                             Pay = 16.65m,
@@ -231,10 +233,10 @@ namespace Capstone.Migrations
                         },
                         new
                         {
-                            Id = new Guid("17261168-6f9c-4db4-a6b8-2bdeb227339b"),
+                            Id = new Guid("16f31420-3f3c-425b-8eb7-4c7940ab35df"),
                             Address = "9 Dahle Circle",
                             FirstName = "Sophie",
-                            JobTitleId = new Guid("028f3848-ba2c-4fc6-ad86-eba0f099cfd3"),
+                            JobTitleId = new Guid("ba85b248-b160-494c-9027-7e3f344979a0"),
                             LastName = "Heller",
                             MaxWeeklyHours = 9,
                             Pay = 14.29m,
@@ -245,10 +247,10 @@ namespace Capstone.Migrations
                         },
                         new
                         {
-                            Id = new Guid("44fe9f3b-c8bb-4bf8-b858-35125a09670a"),
+                            Id = new Guid("d8e42a51-69c9-4936-8e0e-8cd9b01cd6de"),
                             Address = "146 Burrows Trail",
                             FirstName = "Dael",
-                            JobTitleId = new Guid("028f3848-ba2c-4fc6-ad86-eba0f099cfd3"),
+                            JobTitleId = new Guid("ba85b248-b160-494c-9027-7e3f344979a0"),
                             LastName = "Haruard",
                             MaxWeeklyHours = 32,
                             Pay = 16.98m,
@@ -259,10 +261,10 @@ namespace Capstone.Migrations
                         },
                         new
                         {
-                            Id = new Guid("28588be2-1c43-4617-aa71-bba63f5de9c3"),
+                            Id = new Guid("70dadb1c-ef13-4b9e-9472-12364f98177c"),
                             Address = "1579 Nancy Crossing",
                             FirstName = "Engelbert",
-                            JobTitleId = new Guid("028f3848-ba2c-4fc6-ad86-eba0f099cfd3"),
+                            JobTitleId = new Guid("ba85b248-b160-494c-9027-7e3f344979a0"),
                             LastName = "Everal",
                             MaxWeeklyHours = 40,
                             Pay = 15.34m,
@@ -273,10 +275,10 @@ namespace Capstone.Migrations
                         },
                         new
                         {
-                            Id = new Guid("6ed84f79-8f11-4504-91cd-213755423ad8"),
+                            Id = new Guid("88c71f3d-1996-4496-9252-aec4d7c0cd9a"),
                             Address = "70226 Evergreen Center",
                             FirstName = "Bradley",
-                            JobTitleId = new Guid("028f3848-ba2c-4fc6-ad86-eba0f099cfd3"),
+                            JobTitleId = new Guid("ba85b248-b160-494c-9027-7e3f344979a0"),
                             LastName = "MacFie",
                             MaxWeeklyHours = 40,
                             Pay = 19.53m,
@@ -287,10 +289,10 @@ namespace Capstone.Migrations
                         },
                         new
                         {
-                            Id = new Guid("10a96f6f-ab1a-452d-b312-57dde459ca14"),
+                            Id = new Guid("ad78c009-9c63-4d9b-9d3b-baa2a020ff35"),
                             Address = "872 Roxbury Lane",
                             FirstName = "Aron",
-                            JobTitleId = new Guid("028f3848-ba2c-4fc6-ad86-eba0f099cfd3"),
+                            JobTitleId = new Guid("ba85b248-b160-494c-9027-7e3f344979a0"),
                             LastName = "Brayn",
                             MaxWeeklyHours = 32,
                             Pay = 17.55m,
@@ -301,10 +303,10 @@ namespace Capstone.Migrations
                         },
                         new
                         {
-                            Id = new Guid("6737b054-4f06-4f7d-baa6-e22f704ef53f"),
+                            Id = new Guid("12e02744-4a5c-48bf-9e84-320f3f7a0ce2"),
                             Address = "7944 Golf View Lane",
                             FirstName = "Brion",
-                            JobTitleId = new Guid("028f3848-ba2c-4fc6-ad86-eba0f099cfd3"),
+                            JobTitleId = new Guid("ba85b248-b160-494c-9027-7e3f344979a0"),
                             LastName = "Quig",
                             MaxWeeklyHours = 31,
                             Pay = 14.87m,
@@ -315,10 +317,10 @@ namespace Capstone.Migrations
                         },
                         new
                         {
-                            Id = new Guid("65b78c81-aab1-43f8-8c1f-aae73ec7e71b"),
+                            Id = new Guid("f17d73a7-fdc7-4393-a85b-efd629ceae28"),
                             Address = "86479 Harbort Center",
                             FirstName = "Christel",
-                            JobTitleId = new Guid("30b85d3f-53dc-488b-96ce-f06de7da1acc"),
+                            JobTitleId = new Guid("3b7dc549-d2ec-4b96-be4d-db7d556597b7"),
                             LastName = "Jobbing",
                             MaxWeeklyHours = 40,
                             Pay = 16.96m,
@@ -329,10 +331,10 @@ namespace Capstone.Migrations
                         },
                         new
                         {
-                            Id = new Guid("b521fc2e-b060-4d3d-aca7-75bf9ca814d2"),
+                            Id = new Guid("3a8bd469-bcfc-40da-b77c-4495020f3133"),
                             Address = "04662 Porter Lane",
                             FirstName = "Kai",
-                            JobTitleId = new Guid("30b85d3f-53dc-488b-96ce-f06de7da1acc"),
+                            JobTitleId = new Guid("3b7dc549-d2ec-4b96-be4d-db7d556597b7"),
                             LastName = "Michelin",
                             MaxWeeklyHours = 40,
                             Pay = 14.58m,
@@ -343,10 +345,10 @@ namespace Capstone.Migrations
                         },
                         new
                         {
-                            Id = new Guid("5a07b0eb-2e7f-406a-b3f6-b1b8f93f58af"),
+                            Id = new Guid("1f45830c-5614-4ae6-af08-bd87b583fec1"),
                             Address = "461 Mccormick Place",
                             FirstName = "Rubin",
-                            JobTitleId = new Guid("30b85d3f-53dc-488b-96ce-f06de7da1acc"),
+                            JobTitleId = new Guid("3b7dc549-d2ec-4b96-be4d-db7d556597b7"),
                             LastName = "Westwater",
                             MaxWeeklyHours = 40,
                             Pay = 16.62m,
@@ -357,10 +359,10 @@ namespace Capstone.Migrations
                         },
                         new
                         {
-                            Id = new Guid("7c4dad28-c081-4412-b158-7e619a3c461c"),
+                            Id = new Guid("7658583f-5fb8-4446-806e-b46efd3a81b2"),
                             Address = "78 Northfield Pass",
                             FirstName = "Miran",
-                            JobTitleId = new Guid("30b85d3f-53dc-488b-96ce-f06de7da1acc"),
+                            JobTitleId = new Guid("3b7dc549-d2ec-4b96-be4d-db7d556597b7"),
                             LastName = "MacGauhy",
                             MaxWeeklyHours = 7,
                             Pay = 17.15m,
@@ -371,10 +373,10 @@ namespace Capstone.Migrations
                         },
                         new
                         {
-                            Id = new Guid("067fedcd-e35f-4560-8e4f-6d228bed9284"),
+                            Id = new Guid("76ca8b9b-36f4-4322-a98d-7affcbeb14fc"),
                             Address = "5 Longview Road",
                             FirstName = "Olympe",
-                            JobTitleId = new Guid("96239770-bee6-4245-9933-3bdb1f9daa81"),
+                            JobTitleId = new Guid("f326dbf1-ea74-40b5-91f6-cbc742e3d294"),
                             LastName = "Roseman",
                             MaxWeeklyHours = 33,
                             Pay = 14.32m,
@@ -385,10 +387,10 @@ namespace Capstone.Migrations
                         },
                         new
                         {
-                            Id = new Guid("6a7898c7-4480-4c6c-a6da-8b4ccadb1f85"),
+                            Id = new Guid("81456073-2e14-4969-9737-90271d3f8c75"),
                             Address = "452 Eastlawn Street",
                             FirstName = "Michell",
-                            JobTitleId = new Guid("96239770-bee6-4245-9933-3bdb1f9daa81"),
+                            JobTitleId = new Guid("f326dbf1-ea74-40b5-91f6-cbc742e3d294"),
                             LastName = "McClunaghan",
                             MaxWeeklyHours = 40,
                             Pay = 19.96m,
@@ -399,10 +401,10 @@ namespace Capstone.Migrations
                         },
                         new
                         {
-                            Id = new Guid("cbe92f79-aec3-456b-94b2-fea7932c9b0d"),
+                            Id = new Guid("91781cb8-8e57-429b-afa0-bbf2a50ab17d"),
                             Address = "450 Fallview Park",
                             FirstName = "Bridget",
-                            JobTitleId = new Guid("96239770-bee6-4245-9933-3bdb1f9daa81"),
+                            JobTitleId = new Guid("f326dbf1-ea74-40b5-91f6-cbc742e3d294"),
                             LastName = "Neathway",
                             MaxWeeklyHours = 15,
                             Pay = 16.14m,
@@ -413,10 +415,10 @@ namespace Capstone.Migrations
                         },
                         new
                         {
-                            Id = new Guid("c188ca55-4d8d-4fdc-8581-ef8fee04fea7"),
+                            Id = new Guid("0f86197d-9f64-478a-9afa-7b9ab7efe45b"),
                             Address = "899 Namekagon Point",
                             FirstName = "Tannie",
-                            JobTitleId = new Guid("96239770-bee6-4245-9933-3bdb1f9daa81"),
+                            JobTitleId = new Guid("f326dbf1-ea74-40b5-91f6-cbc742e3d294"),
                             LastName = "Chantillon",
                             MaxWeeklyHours = 40,
                             Pay = 18.4m,
@@ -427,10 +429,10 @@ namespace Capstone.Migrations
                         },
                         new
                         {
-                            Id = new Guid("4201ed78-d99f-4c02-a3de-e8e69085038b"),
+                            Id = new Guid("df104d07-71ee-4f7e-8a44-b8e327723f28"),
                             Address = "13671 Anzinger Hill",
                             FirstName = "Elvis",
-                            JobTitleId = new Guid("31bbfeb2-c60e-497b-9532-3cf2f90a4939"),
+                            JobTitleId = new Guid("a14cebc4-d139-4aff-aa00-dafa650db24c"),
                             LastName = "Birchenhead",
                             MaxWeeklyHours = 40,
                             Pay = 14.97m,
@@ -441,10 +443,10 @@ namespace Capstone.Migrations
                         },
                         new
                         {
-                            Id = new Guid("c89dd530-1f08-4306-acf6-f2c7728ee909"),
+                            Id = new Guid("8ca86232-1534-4d8c-871c-872d4a19d551"),
                             Address = "33 Dunning Plaza",
                             FirstName = "Myra",
-                            JobTitleId = new Guid("31bbfeb2-c60e-497b-9532-3cf2f90a4939"),
+                            JobTitleId = new Guid("a14cebc4-d139-4aff-aa00-dafa650db24c"),
                             LastName = "Dewane",
                             MaxWeeklyHours = 40,
                             Pay = 19.18m,
@@ -630,6 +632,27 @@ namespace Capstone.Migrations
                     b.ToTable("StoreHours");
                 });
 
+            modelBuilder.Entity("Capstone.Models.StoreHourLineItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("DayId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("StoreHourId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DayId");
+
+                    b.HasIndex("StoreHourId");
+
+                    b.ToTable("StoreHourLineItems");
+                });
+
             modelBuilder.Entity("Capstone.Models.TimeOff", b =>
                 {
                     b.Property<Guid>("Id")
@@ -791,43 +814,22 @@ namespace Capstone.Migrations
                         .WithMany()
                         .HasForeignKey("StoreId");
 
-                    b.OwnsMany("Capstone.Models.StoreHourLineItem", "StoreHourLineItems", b1 =>
-                        {
-                            b1.Property<Guid>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("char(36)");
-
-                            b1.Property<Guid>("DayId")
-                                .HasColumnType("char(36)");
-
-                            b1.Property<Guid>("StoreHourId")
-                                .HasColumnType("char(36)");
-
-                            b1.HasKey("Id");
-
-                            b1.HasIndex("DayId");
-
-                            b1.HasIndex("StoreHourId");
-
-                            b1.ToTable("StoreHourLineItems");
-
-                            b1.HasOne("Capstone.Models.DayLineItem", "Day")
-                                .WithMany()
-                                .HasForeignKey("DayId")
-                                .OnDelete(DeleteBehavior.Cascade)
-                                .IsRequired();
-
-                            b1.WithOwner("StoreHour")
-                                .HasForeignKey("StoreHourId");
-
-                            b1.Navigation("Day");
-
-                            b1.Navigation("StoreHour");
-                        });
-
                     b.Navigation("Store");
+                });
 
-                    b.Navigation("StoreHourLineItems");
+            modelBuilder.Entity("Capstone.Models.StoreHourLineItem", b =>
+                {
+                    b.HasOne("Capstone.Models.DayLineItem", "Day")
+                        .WithMany()
+                        .HasForeignKey("DayId");
+
+                    b.HasOne("Capstone.Models.StoreHour", "StoreHour")
+                        .WithMany()
+                        .HasForeignKey("StoreHourId");
+
+                    b.Navigation("Day");
+
+                    b.Navigation("StoreHour");
                 });
 
             modelBuilder.Entity("Capstone.Models.TimeOff", b =>

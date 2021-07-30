@@ -9,15 +9,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Capstone.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20210608180002_updated")]
-    partial class updated
+    [Migration("20210730172851_changed-store-schema")]
+    partial class changedstoreschema
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 64)
-                .HasAnnotation("ProductVersion", "5.0.7");
+                .HasAnnotation("ProductVersion", "5.0.8");
 
             modelBuilder.Entity("Capstone.Models.Availability", b =>
                 {
@@ -95,6 +95,28 @@ namespace Capstone.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("JobTitles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("30b85d3f-53dc-488b-96ce-f06de7da1acc"),
+                            Name = "Stock"
+                        },
+                        new
+                        {
+                            Id = new Guid("028f3848-ba2c-4fc6-ad86-eba0f099cfd3"),
+                            Name = "Sales"
+                        },
+                        new
+                        {
+                            Id = new Guid("96239770-bee6-4245-9933-3bdb1f9daa81"),
+                            Name = "Cashier"
+                        },
+                        new
+                        {
+                            Id = new Guid("31bbfeb2-c60e-497b-9532-3cf2f90a4939"),
+                            Name = "Manager"
+                        });
                 });
 
             modelBuilder.Entity("Capstone.Models.Person", b =>
@@ -122,7 +144,6 @@ namespace Capstone.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Password")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<decimal>("Pay")
@@ -145,7 +166,6 @@ namespace Capstone.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<string>("Username")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.HasKey("Id");
@@ -153,6 +173,288 @@ namespace Capstone.Migrations
                     b.HasIndex("JobTitleId");
 
                     b.ToTable("Person");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("08dbe323-63bf-4dd7-aa01-471ba5eb0897"),
+                            Address = "8889 Milwaukee Way",
+                            FirstName = "Brynna",
+                            JobTitleId = new Guid("028f3848-ba2c-4fc6-ad86-eba0f099cfd3"),
+                            LastName = "Celloni",
+                            MaxWeeklyHours = 40,
+                            Pay = 14.05m,
+                            Phone = "7981594155",
+                            Postal = "G6B",
+                            Province = "Québec",
+                            Role = "FT"
+                        },
+                        new
+                        {
+                            Id = new Guid("bbf290bd-e028-4405-8323-f9985bb8db0c"),
+                            Address = "8262 Coleman Alley",
+                            FirstName = "Cobb",
+                            JobTitleId = new Guid("028f3848-ba2c-4fc6-ad86-eba0f099cfd3"),
+                            LastName = "Dudden",
+                            MaxWeeklyHours = 12,
+                            Pay = 18.88m,
+                            Phone = "4312540837",
+                            Postal = "J3Y",
+                            Province = "Québec",
+                            Role = "PT"
+                        },
+                        new
+                        {
+                            Id = new Guid("c6628c92-8bed-4d53-a374-66f1edde67ec"),
+                            Address = "22011 Mosinee Parkway",
+                            FirstName = "Mick",
+                            JobTitleId = new Guid("028f3848-ba2c-4fc6-ad86-eba0f099cfd3"),
+                            LastName = "Neiland",
+                            MaxWeeklyHours = 7,
+                            Pay = 19.27m,
+                            Phone = "5866251552",
+                            Postal = "T9H",
+                            Province = "Québec",
+                            Role = "PT"
+                        },
+                        new
+                        {
+                            Id = new Guid("05c3ab16-57e1-4dae-bb29-270941045529"),
+                            Address = "71524 Reindahl Drive",
+                            FirstName = "Renaud",
+                            JobTitleId = new Guid("028f3848-ba2c-4fc6-ad86-eba0f099cfd3"),
+                            LastName = "Trott",
+                            MaxWeeklyHours = 16,
+                            Pay = 16.65m,
+                            Phone = "4111346039",
+                            Postal = "J8Y",
+                            Province = "Ontario",
+                            Role = "PT"
+                        },
+                        new
+                        {
+                            Id = new Guid("17261168-6f9c-4db4-a6b8-2bdeb227339b"),
+                            Address = "9 Dahle Circle",
+                            FirstName = "Sophie",
+                            JobTitleId = new Guid("028f3848-ba2c-4fc6-ad86-eba0f099cfd3"),
+                            LastName = "Heller",
+                            MaxWeeklyHours = 9,
+                            Pay = 14.29m,
+                            Phone = "9497542437",
+                            Postal = "T5G",
+                            Province = "Manitoba",
+                            Role = "PT"
+                        },
+                        new
+                        {
+                            Id = new Guid("44fe9f3b-c8bb-4bf8-b858-35125a09670a"),
+                            Address = "146 Burrows Trail",
+                            FirstName = "Dael",
+                            JobTitleId = new Guid("028f3848-ba2c-4fc6-ad86-eba0f099cfd3"),
+                            LastName = "Haruard",
+                            MaxWeeklyHours = 32,
+                            Pay = 16.98m,
+                            Phone = "3214306584",
+                            Postal = "J0R",
+                            Province = "Québec",
+                            Role = "PT"
+                        },
+                        new
+                        {
+                            Id = new Guid("28588be2-1c43-4617-aa71-bba63f5de9c3"),
+                            Address = "1579 Nancy Crossing",
+                            FirstName = "Engelbert",
+                            JobTitleId = new Guid("028f3848-ba2c-4fc6-ad86-eba0f099cfd3"),
+                            LastName = "Everal",
+                            MaxWeeklyHours = 40,
+                            Pay = 15.34m,
+                            Phone = "5371747772",
+                            Postal = "J7J",
+                            Province = "Québec",
+                            Role = "FT"
+                        },
+                        new
+                        {
+                            Id = new Guid("6ed84f79-8f11-4504-91cd-213755423ad8"),
+                            Address = "70226 Evergreen Center",
+                            FirstName = "Bradley",
+                            JobTitleId = new Guid("028f3848-ba2c-4fc6-ad86-eba0f099cfd3"),
+                            LastName = "MacFie",
+                            MaxWeeklyHours = 40,
+                            Pay = 19.53m,
+                            Phone = "7252174592",
+                            Postal = "L6E",
+                            Province = "Ontario",
+                            Role = "FT"
+                        },
+                        new
+                        {
+                            Id = new Guid("10a96f6f-ab1a-452d-b312-57dde459ca14"),
+                            Address = "872 Roxbury Lane",
+                            FirstName = "Aron",
+                            JobTitleId = new Guid("028f3848-ba2c-4fc6-ad86-eba0f099cfd3"),
+                            LastName = "Brayn",
+                            MaxWeeklyHours = 32,
+                            Pay = 17.55m,
+                            Phone = "3576946796",
+                            Postal = "L4P",
+                            Province = "Ontario",
+                            Role = "PT"
+                        },
+                        new
+                        {
+                            Id = new Guid("6737b054-4f06-4f7d-baa6-e22f704ef53f"),
+                            Address = "7944 Golf View Lane",
+                            FirstName = "Brion",
+                            JobTitleId = new Guid("028f3848-ba2c-4fc6-ad86-eba0f099cfd3"),
+                            LastName = "Quig",
+                            MaxWeeklyHours = 31,
+                            Pay = 14.87m,
+                            Phone = "1361511879",
+                            Postal = "N3E",
+                            Province = "Manitoba",
+                            Role = "PT"
+                        },
+                        new
+                        {
+                            Id = new Guid("65b78c81-aab1-43f8-8c1f-aae73ec7e71b"),
+                            Address = "86479 Harbort Center",
+                            FirstName = "Christel",
+                            JobTitleId = new Guid("30b85d3f-53dc-488b-96ce-f06de7da1acc"),
+                            LastName = "Jobbing",
+                            MaxWeeklyHours = 40,
+                            Pay = 16.96m,
+                            Phone = "7512327796",
+                            Postal = "L2V",
+                            Province = "Ontario",
+                            Role = "FT"
+                        },
+                        new
+                        {
+                            Id = new Guid("b521fc2e-b060-4d3d-aca7-75bf9ca814d2"),
+                            Address = "04662 Porter Lane",
+                            FirstName = "Kai",
+                            JobTitleId = new Guid("30b85d3f-53dc-488b-96ce-f06de7da1acc"),
+                            LastName = "Michelin",
+                            MaxWeeklyHours = 40,
+                            Pay = 14.58m,
+                            Phone = "7086531921",
+                            Postal = "L9Y",
+                            Province = "Ontario",
+                            Role = "FT"
+                        },
+                        new
+                        {
+                            Id = new Guid("5a07b0eb-2e7f-406a-b3f6-b1b8f93f58af"),
+                            Address = "461 Mccormick Place",
+                            FirstName = "Rubin",
+                            JobTitleId = new Guid("30b85d3f-53dc-488b-96ce-f06de7da1acc"),
+                            LastName = "Westwater",
+                            MaxWeeklyHours = 40,
+                            Pay = 16.62m,
+                            Phone = "2096042736",
+                            Postal = "G5Z",
+                            Province = "Ontario",
+                            Role = "FT"
+                        },
+                        new
+                        {
+                            Id = new Guid("7c4dad28-c081-4412-b158-7e619a3c461c"),
+                            Address = "78 Northfield Pass",
+                            FirstName = "Miran",
+                            JobTitleId = new Guid("30b85d3f-53dc-488b-96ce-f06de7da1acc"),
+                            LastName = "MacGauhy",
+                            MaxWeeklyHours = 7,
+                            Pay = 17.15m,
+                            Phone = "2599076601",
+                            Postal = "S3N",
+                            Province = "Québec",
+                            Role = "PT"
+                        },
+                        new
+                        {
+                            Id = new Guid("067fedcd-e35f-4560-8e4f-6d228bed9284"),
+                            Address = "5 Longview Road",
+                            FirstName = "Olympe",
+                            JobTitleId = new Guid("96239770-bee6-4245-9933-3bdb1f9daa81"),
+                            LastName = "Roseman",
+                            MaxWeeklyHours = 33,
+                            Pay = 14.32m,
+                            Phone = "6834047543",
+                            Postal = "J2K",
+                            Province = "Québec",
+                            Role = "PT"
+                        },
+                        new
+                        {
+                            Id = new Guid("6a7898c7-4480-4c6c-a6da-8b4ccadb1f85"),
+                            Address = "452 Eastlawn Street",
+                            FirstName = "Michell",
+                            JobTitleId = new Guid("96239770-bee6-4245-9933-3bdb1f9daa81"),
+                            LastName = "McClunaghan",
+                            MaxWeeklyHours = 40,
+                            Pay = 19.96m,
+                            Phone = "9705140405",
+                            Postal = "J6A",
+                            Province = "Ontario",
+                            Role = "FT"
+                        },
+                        new
+                        {
+                            Id = new Guid("cbe92f79-aec3-456b-94b2-fea7932c9b0d"),
+                            Address = "450 Fallview Park",
+                            FirstName = "Bridget",
+                            JobTitleId = new Guid("96239770-bee6-4245-9933-3bdb1f9daa81"),
+                            LastName = "Neathway",
+                            MaxWeeklyHours = 15,
+                            Pay = 16.14m,
+                            Phone = "9741409393",
+                            Postal = "J3V",
+                            Province = "Québec",
+                            Role = "PT"
+                        },
+                        new
+                        {
+                            Id = new Guid("c188ca55-4d8d-4fdc-8581-ef8fee04fea7"),
+                            Address = "899 Namekagon Point",
+                            FirstName = "Tannie",
+                            JobTitleId = new Guid("96239770-bee6-4245-9933-3bdb1f9daa81"),
+                            LastName = "Chantillon",
+                            MaxWeeklyHours = 40,
+                            Pay = 18.4m,
+                            Phone = "7796457229",
+                            Postal = "G5N",
+                            Province = "Québec",
+                            Role = "FT"
+                        },
+                        new
+                        {
+                            Id = new Guid("4201ed78-d99f-4c02-a3de-e8e69085038b"),
+                            Address = "13671 Anzinger Hill",
+                            FirstName = "Elvis",
+                            JobTitleId = new Guid("31bbfeb2-c60e-497b-9532-3cf2f90a4939"),
+                            LastName = "Birchenhead",
+                            MaxWeeklyHours = 40,
+                            Pay = 14.97m,
+                            Phone = "4464829827",
+                            Postal = "J0S",
+                            Province = "Québec",
+                            Role = "FT"
+                        },
+                        new
+                        {
+                            Id = new Guid("c89dd530-1f08-4306-acf6-f2c7728ee909"),
+                            Address = "33 Dunning Plaza",
+                            FirstName = "Myra",
+                            JobTitleId = new Guid("31bbfeb2-c60e-497b-9532-3cf2f90a4939"),
+                            LastName = "Dewane",
+                            MaxWeeklyHours = 40,
+                            Pay = 19.18m,
+                            Phone = "3184014459",
+                            Postal = "G9H",
+                            Province = "Québec",
+                            Role = "FT"
+                        });
                 });
 
             modelBuilder.Entity("Capstone.Models.PersonScheduleLineItem", b =>
@@ -330,27 +632,6 @@ namespace Capstone.Migrations
                     b.ToTable("StoreHours");
                 });
 
-            modelBuilder.Entity("Capstone.Models.StoreHourLineItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
-
-                    b.Property<Guid?>("DayId")
-                        .HasColumnType("char(36)");
-
-                    b.Property<Guid?>("StoreHourId")
-                        .HasColumnType("char(36)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DayId");
-
-                    b.HasIndex("StoreHourId");
-
-                    b.ToTable("StoreHourLineItems");
-                });
-
             modelBuilder.Entity("Capstone.Models.TimeOff", b =>
                 {
                     b.Property<Guid>("Id")
@@ -512,22 +793,43 @@ namespace Capstone.Migrations
                         .WithMany()
                         .HasForeignKey("StoreId");
 
+                    b.OwnsMany("Capstone.Models.StoreHourLineItem", "StoreHourLineItems", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("char(36)");
+
+                            b1.Property<Guid>("DayId")
+                                .HasColumnType("char(36)");
+
+                            b1.Property<Guid>("StoreHourId")
+                                .HasColumnType("char(36)");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("DayId");
+
+                            b1.HasIndex("StoreHourId");
+
+                            b1.ToTable("StoreHourLineItems");
+
+                            b1.HasOne("Capstone.Models.DayLineItem", "Day")
+                                .WithMany()
+                                .HasForeignKey("DayId")
+                                .OnDelete(DeleteBehavior.Cascade)
+                                .IsRequired();
+
+                            b1.WithOwner("StoreHour")
+                                .HasForeignKey("StoreHourId");
+
+                            b1.Navigation("Day");
+
+                            b1.Navigation("StoreHour");
+                        });
+
                     b.Navigation("Store");
-                });
 
-            modelBuilder.Entity("Capstone.Models.StoreHourLineItem", b =>
-                {
-                    b.HasOne("Capstone.Models.DayLineItem", "Day")
-                        .WithMany()
-                        .HasForeignKey("DayId");
-
-                    b.HasOne("Capstone.Models.StoreHour", "StoreHour")
-                        .WithMany()
-                        .HasForeignKey("StoreHourId");
-
-                    b.Navigation("Day");
-
-                    b.Navigation("StoreHour");
+                    b.Navigation("StoreHourLineItems");
                 });
 
             modelBuilder.Entity("Capstone.Models.TimeOff", b =>

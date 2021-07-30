@@ -12,9 +12,9 @@ namespace Capstone.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class StoresController : BaseController<Store, StoreRepository>
+    public class JobTitleController : BaseController<JobTitle, JobTitleRepository>
     {
-        public StoresController(StoreRepository repo) : base(repo)
+        public JobTitleController(JobTitleRepository repo) : base(repo)
         {
         }
     }

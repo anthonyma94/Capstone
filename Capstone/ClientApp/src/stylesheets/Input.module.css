@@ -1,0 +1,8 @@
+input.animate:focus-within ~ label,
+input.animate:not(:placeholder-shown) ~ label {
+  @apply transform scale-75 -translate-y-5;
+}
+
+input.animate:focus-within ~ label {
+  @apply text-blue-500;
+}

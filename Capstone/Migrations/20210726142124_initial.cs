@@ -3,36 +3,28 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Capstone.Migrations
 {
-    public partial class updated : Migration
+    public partial class initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_StoreHourLineItems_DayLineItem_DayId",
-                table: "StoreHourLineItems");
+            migrationBuilder.AlterDatabase()
+                .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.DropPrimaryKey(
-                name: "PK_DayLineItem",
-                table: "DayLineItem");
-
-            migrationBuilder.RenameTable(
-                name: "DayLineItem",
-                newName: "DayLineItems");
-
-            migrationBuilder.AlterColumn<int>(
-                name: "Day",
-                table: "DayLineItems",
-                type: "int",
-                nullable: false,
-                defaultValue: 0,
-                oldClrType: typeof(int),
-                oldType: "int",
-                oldNullable: true);
-
-            migrationBuilder.AddPrimaryKey(
-                name: "PK_DayLineItems",
-                table: "DayLineItems",
-                column: "Id");
+            migrationBuilder.CreateTable(
+                name: "DayLineItems",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    Day = table.Column<int>(type: "int", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    Start = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    End = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DayLineItems", x => x.Id);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "JobTitles",
@@ -45,6 +37,33 @@ namespace Capstone.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_JobTitles", x => x.Id);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "Schedules",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    IsDefault = table.Column<bool>(type: "tinyint(1)", nullable: false, defaultValue: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Schedules", x => x.Id);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "Stores",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    Name = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Stores", x => x.Id);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -64,19 +83,6 @@ namespace Capstone.Migrations
                         principalTable: "DayLineItems",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder.CreateTable(
-                name: "Schedules",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    IsDefault = table.Column<bool>(type: "tinyint(1)", nullable: false, defaultValue: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Schedules", x => x.Id);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -101,9 +107,9 @@ namespace Capstone.Migrations
                     Pay = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
                     Phone = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Username = table.Column<string>(type: "longtext", nullable: false)
+                    Username = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Password = table.Column<string>(type: "longtext", nullable: false)
+                    Password = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     MaxWeeklyHours = table.Column<int>(type: "int", nullable: false)
                 },
@@ -114,6 +120,51 @@ namespace Capstone.Migrations
                         name: "FK_Person_JobTitles_JobTitleId",
                         column: x => x.JobTitleId,
                         principalTable: "JobTitles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "ScheduleLineItems",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    ScheduleId = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
+                    DayId = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ScheduleLineItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ScheduleLineItems_DayLineItems_DayId",
+                        column: x => x.DayId,
+                        principalTable: "DayLineItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ScheduleLineItems_Schedules_ScheduleId",
+                        column: x => x.ScheduleId,
+                        principalTable: "Schedules",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "StoreHours",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    StoreId = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StoreHours", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_StoreHours_Stores_StoreId",
+                        column: x => x.StoreId,
+                        principalTable: "Stores",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 })
@@ -141,32 +192,6 @@ namespace Capstone.Migrations
                         name: "FK_ScheduleRuleEmpLineItems_ScheduleRules_ScheduleRuleId",
                         column: x => x.ScheduleRuleId,
                         principalTable: "ScheduleRules",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder.CreateTable(
-                name: "ScheduleLineItems",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    ScheduleId = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
-                    DayId = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ScheduleLineItems", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ScheduleLineItems_DayLineItems_DayId",
-                        column: x => x.DayId,
-                        principalTable: "DayLineItems",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_ScheduleLineItems_Schedules_ScheduleId",
-                        column: x => x.ScheduleId,
-                        principalTable: "Schedules",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 })
@@ -235,6 +260,32 @@ namespace Capstone.Migrations
                         name: "FK_PersonScheduleLineItems_ScheduleLineItems_ScheduleId",
                         column: x => x.ScheduleId,
                         principalTable: "ScheduleLineItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "StoreHourLineItems",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    StoreHourId = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
+                    DayId = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StoreHourLineItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_StoreHourLineItems_DayLineItems_DayId",
+                        column: x => x.DayId,
+                        principalTable: "DayLineItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_StoreHourLineItems_StoreHours_StoreHourId",
+                        column: x => x.StoreHourId,
+                        principalTable: "StoreHours",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 })
@@ -340,6 +391,33 @@ namespace Capstone.Migrations
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
+            migrationBuilder.InsertData(
+                table: "Person",
+                columns: new[] { "Id", "Address", "FirstName", "JobTitleId", "LastName", "MaxWeeklyHours", "Password", "Pay", "Phone", "Postal", "Province", "Role", "Username" },
+                values: new object[,]
+                {
+                    { new Guid("55d3ac1b-0489-4d48-b7d8-f64ebc35dba9"), "8889 Milwaukee Way", "Brynna", null, "Celloni", 40, null, 14.05m, "7981594155", "G6B", "Québec", "FT", null },
+                    { new Guid("053572ef-9506-42be-9f81-c90e251b1c6c"), "899 Namekagon Point", "Tannie", null, "Chantillon", 40, null, 18.4m, "7796457229", "G5N", "Québec", "FT", null },
+                    { new Guid("80cf5eab-7936-4cb4-b512-663e00459c92"), "450 Fallview Park", "Bridget", null, "Neathway", 15, null, 16.14m, "9741409393", "J3V", "Québec", "PT", null },
+                    { new Guid("b104b2aa-56f6-44fb-bba9-159a74aabec6"), "452 Eastlawn Street", "Michell", null, "McClunaghan", 40, null, 19.96m, "9705140405", "J6A", "Ontario", "FT", null },
+                    { new Guid("b140daf2-edae-44ae-9414-30f162dcb58a"), "5 Longview Road", "Olympe", null, "Roseman", 33, null, 14.32m, "6834047543", "J2K", "Québec", "PT", null },
+                    { new Guid("9d64f9b9-1df2-461f-9e8a-1d4d53432560"), "78 Northfield Pass", "Miran", null, "MacGauhy", 7, null, 17.15m, "2599076601", "S3N", "Québec", "PT", null },
+                    { new Guid("949499ee-ba27-440b-8aa5-41c3522e20e2"), "461 Mccormick Place", "Rubin", null, "Westwater", 40, null, 16.62m, "2096042736", "G5Z", "Ontario", "FT", null },
+                    { new Guid("b68576a8-cd0a-4d58-b82b-70b2aae9555b"), "04662 Porter Lane", "Kai", null, "Michelin", 40, null, 14.58m, "7086531921", "L9Y", "Ontario", "FT", null },
+                    { new Guid("91b94ec4-e244-45bd-a847-bb469fd750e2"), "86479 Harbort Center", "Christel", null, "Jobbing", 40, null, 16.96m, "7512327796", "L2V", "Ontario", "FT", null },
+                    { new Guid("68eaba53-35d4-4da0-88c4-46fdd01c53ff"), "7944 Golf View Lane", "Brion", null, "Quig", 31, null, 14.87m, "1361511879", "N3E", "Manitoba", "PT", null },
+                    { new Guid("f7d198c4-3798-4da2-a97c-8ca003d8cd3a"), "872 Roxbury Lane", "Aron", null, "Brayn", 32, null, 17.55m, "3576946796", "L4P", "Ontario", "PT", null },
+                    { new Guid("eda07ec8-99b1-4532-a450-1c13caa2ba73"), "70226 Evergreen Center", "Bradley", null, "MacFie", 40, null, 19.53m, "7252174592", "L6E", "Ontario", "FT", null },
+                    { new Guid("7b232974-27df-4ecb-a7e7-239cff4925d6"), "1579 Nancy Crossing", "Engelbert", null, "Everal", 40, null, 15.34m, "5371747772", "J7J", "Québec", "FT", null },
+                    { new Guid("e684c3a6-7eb1-4a27-8446-23870b4d3dba"), "146 Burrows Trail", "Dael", null, "Haruard", 32, null, 16.98m, "3214306584", "J0R", "Québec", "PT", null },
+                    { new Guid("f3e069af-0177-4e36-a52d-b9454ffd0e99"), "9 Dahle Circle", "Sophie", null, "Heller", 9, null, 14.29m, "9497542437", "T5G", "Manitoba", "PT", null },
+                    { new Guid("a5488e46-cfac-4d27-b395-590394ad0995"), "71524 Reindahl Drive", "Renaud", null, "Trott", 16, null, 16.65m, "4111346039", "J8Y", "Ontario", "PT", null },
+                    { new Guid("cbf7b071-87ef-47b9-adf7-808232b07f8f"), "22011 Mosinee Parkway", "Mick", null, "Neiland", 7, null, 19.27m, "5866251552", "T9H", "Québec", "PT", null },
+                    { new Guid("243c4bcc-56a6-469f-bb48-1dc7a70c1181"), "8262 Coleman Alley", "Cobb", null, "Dudden", 12, null, 18.88m, "4312540837", "J3Y", "Québec", "PT", null },
+                    { new Guid("bc6eadb8-4df5-4118-b813-eaba519f8873"), "13671 Anzinger Hill", "Elvis", null, "Birchenhead", 40, null, 14.97m, "4464829827", "J0S", "Québec", "FT", null },
+                    { new Guid("3d498699-5170-4324-a682-c67b37f6fce0"), "33 Dunning Plaza", "Myra", null, "Dewane", 40, null, 19.18m, "3184014459", "G9H", "Québec", "FT", null }
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Availabilities_PersonId",
                 table: "Availabilities",
@@ -411,6 +489,21 @@ namespace Capstone.Migrations
                 column: "ScheduleId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_StoreHourLineItems_DayId",
+                table: "StoreHourLineItems",
+                column: "DayId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StoreHourLineItems_StoreHourId",
+                table: "StoreHourLineItems",
+                column: "StoreHourId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StoreHours_StoreId",
+                table: "StoreHours",
+                column: "StoreId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TimeOffLineItems_DayLineItemId",
                 table: "TimeOffLineItems",
                 column: "DayLineItemId");
@@ -424,22 +517,10 @@ namespace Capstone.Migrations
                 name: "IX_TimeOffs_PersonId",
                 table: "TimeOffs",
                 column: "PersonId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_StoreHourLineItems_DayLineItems_DayId",
-                table: "StoreHourLineItems",
-                column: "DayId",
-                principalTable: "DayLineItems",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_StoreHourLineItems_DayLineItems_DayId",
-                table: "StoreHourLineItems");
-
             migrationBuilder.DropTable(
                 name: "AvailabilityLineItems");
 
@@ -451,6 +532,9 @@ namespace Capstone.Migrations
 
             migrationBuilder.DropTable(
                 name: "SickCalls");
+
+            migrationBuilder.DropTable(
+                name: "StoreHourLineItems");
 
             migrationBuilder.DropTable(
                 name: "TimeOffLineItems");
@@ -465,48 +549,28 @@ namespace Capstone.Migrations
                 name: "PersonScheduleLineItems");
 
             migrationBuilder.DropTable(
+                name: "StoreHours");
+
+            migrationBuilder.DropTable(
                 name: "TimeOffs");
 
             migrationBuilder.DropTable(
                 name: "ScheduleLineItems");
 
             migrationBuilder.DropTable(
+                name: "Stores");
+
+            migrationBuilder.DropTable(
                 name: "Person");
+
+            migrationBuilder.DropTable(
+                name: "DayLineItems");
 
             migrationBuilder.DropTable(
                 name: "Schedules");
 
             migrationBuilder.DropTable(
                 name: "JobTitles");
-
-            migrationBuilder.DropPrimaryKey(
-                name: "PK_DayLineItems",
-                table: "DayLineItems");
-
-            migrationBuilder.RenameTable(
-                name: "DayLineItems",
-                newName: "DayLineItem");
-
-            migrationBuilder.AlterColumn<int>(
-                name: "Day",
-                table: "DayLineItem",
-                type: "int",
-                nullable: true,
-                oldClrType: typeof(int),
-                oldType: "int");
-
-            migrationBuilder.AddPrimaryKey(
-                name: "PK_DayLineItem",
-                table: "DayLineItem",
-                column: "Id");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_StoreHourLineItems_DayLineItem_DayId",
-                table: "StoreHourLineItems",
-                column: "DayId",
-                principalTable: "DayLineItem",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
         }
     }
 }

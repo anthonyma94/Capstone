@@ -1,4 +1,5 @@
 using Capstone.Models;
+using Capstone.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Linq;
 
 namespace Capstone
 {
@@ -28,6 +30,10 @@ namespace Capstone
                 .UseMySql(Configuration.GetConnectionString("mysql"), serverVersion)
                 .EnableSensitiveDataLogging()
                 .EnableDetailedErrors());
+
+            services.RegisterAllRepos(new[] { typeof(Startup).Assembly });
+
+            services.AddTransient<PersonRepository>();
 
             services.AddControllers();
             services.AddSpaStaticFiles(config =>
