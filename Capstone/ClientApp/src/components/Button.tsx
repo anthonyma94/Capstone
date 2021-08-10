@@ -14,6 +14,8 @@ interface IProps
   asyncCallback?: (res: AxiosResponse<any>) => any;
   asyncErrorCallback?: (err: any) => any;
   asyncOpts?: AxiosRequestConfig;
+  loading?: boolean;
+  loadingCondition?: boolean;
 }
 
 const Button: React.FC<IProps> = (props) => {
@@ -21,17 +23,27 @@ const Button: React.FC<IProps> = (props) => {
     href,
     target,
     asyncHref,
+    loading: manualLoading,
+    loadingCondition,
     asyncCallback,
     asyncErrorCallback,
     asyncOpts,
     ...rest
   } = props;
   const [buttonProps, setButtonProps] = useState<IProps>(rest);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(
+    manualLoading === undefined ? false : manualLoading
+  );
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
+  const [clicked, setClicked] = useState(false);
 
   const button = React.createRef<HTMLButtonElement>();
+
+  useEffect(
+    () => setLoading(manualLoading === undefined ? false : manualLoading),
+    [manualLoading]
+  );
 
   const validateProps = () => {
     const tmp = Object.assign({}, rest);
@@ -56,6 +68,15 @@ const Button: React.FC<IProps> = (props) => {
         if (originalClick) originalClick(e);
         if (target) window.open(href, target);
         else window.location.href = href!;
+      };
+    }
+
+    if (loadingCondition !== undefined) {
+      const originalClick = tmp.onClick;
+      tmp.onClick = (e) => {
+        setLoading(true);
+        setClicked(true);
+        if (originalClick) originalClick(e);
       };
     }
 
@@ -88,6 +109,16 @@ const Button: React.FC<IProps> = (props) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(validateProps, [props]);
 
+  // sets loading status on the clicked button when using redux
+  useEffect(() => {
+    if (clicked && loadingCondition !== undefined) {
+      if (loadingCondition !== loading) {
+        setClicked(false);
+        setLoading(!loading);
+      }
+    }
+  }, [clicked, loadingCondition]);
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (button.current) {
@@ -100,7 +131,6 @@ const Button: React.FC<IProps> = (props) => {
     <button
       {...buttonProps}
       className={[
-        buttonProps.className,
         "px-3",
         "py-2",
         "inline-block",
@@ -110,6 +140,7 @@ const Button: React.FC<IProps> = (props) => {
         "duration-100",
         "disabled:opacity-50",
         "disabled:cursor-not-allowed",
+        buttonProps.className,
       ]
         .join(" ")
         .trim()}

@@ -1,0 +1,20 @@
+.active {
+  @apply border-blue-500;
+}
+
+.active ul {
+  @apply scale-100;
+}
+
+.active label,
+.active span.svg {
+  @apply text-blue-500;
+}
+
+.inactive ul {
+  @apply scale-0;
+}
+
+.selected label {
+  @apply transform scale-75 -translate-y-5;
+}

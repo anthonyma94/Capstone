@@ -8,29 +8,41 @@ interface IProps
   > {
   showLabel?: boolean;
   value?: string | number;
+  mask?: string | RegExp;
 }
 
 const Input = (props: IProps) => {
-  const { showLabel: orgShowLabel, ...rest } = props;
+  const { showLabel: orgShowLabel, mask, ...rest } = props;
   const showLabel = orgShowLabel === undefined ? true : orgShowLabel;
   const [internalProps, setInternalProps] = useState<IProps>(rest);
-  const [value, setValue] = useState(rest.value);
+  const [value, setValue] = useState("");
+
   const validateProps = () => {
     const tmp = Object.assign({}, rest);
 
     // Set default type
     if (!tmp.type) tmp.type = "text";
 
-    if (tmp.value) {
-      setValue(tmp.value);
+    if (tmp.onChange) {
+      if (tmp.value) setValue(maskValue(tmp.value));
       const onChange = tmp.onChange;
       tmp.onChange = (e) => {
+        e.target.value = maskValue(e.target.value);
         if (onChange) onChange(e);
         setValue(e.target.value);
       };
     }
 
     setInternalProps(tmp);
+  };
+  const maskValue = (value: string | number) => {
+    let tmp = value;
+    if (typeof value === "number") tmp = value.toString();
+    if (mask) {
+      const match = (tmp as string).match(mask);
+      tmp = (match && match[0]) || tmp;
+    }
+    return tmp as string;
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps

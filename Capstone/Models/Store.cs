@@ -12,21 +12,14 @@ namespace Capstone.Models
     {
         [Required]
         public string Name { get; set; }
+
+        public List<StoreHourLineItem> StoreHours { get; set; }
     }
 
-    public class StoreHour : BaseEntity
-    {
-        [Required]
-        public Store Store { get; set; }
-
-        public List<StoreHourLineItem> StoreHourLineItems { get; set; }
-    }
-
-    [Owned]
     public class StoreHourLineItem : BaseEntity
     {
         [Required]
-        public StoreHour StoreHour { get; set; }
+        public Store Store { get; set; }
 
         [Required]
         public DayLineItem Day { get; set; }

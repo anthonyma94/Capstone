@@ -1,11 +1,15 @@
 import React from "react";
 import Navbar from "./Navbar";
 
-const Layout: React.FC = ({ children }) => {
+interface IProps {
+  loading?: boolean;
+}
+
+const Layout: React.FC<IProps> = ({ loading, children }) => {
   return (
     <>
       <Navbar />
-      <main>{children}</main>
+      {loading === true ? <div>Loading...</div> : <main>{children}</main>}
     </>
   );
 };

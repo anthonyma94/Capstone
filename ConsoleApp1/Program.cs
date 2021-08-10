@@ -12,25 +12,13 @@ namespace ConsoleApp1
     {
         private static void Main(string[] args)
         {
-            var typesFromAssemblies = (new[] { typeof(Startup).Assembly }).SelectMany(x => x.DefinedTypes.Where(y => IsSubclassOfRawGeneric(typeof(BaseRepository<>), y)));
-            foreach (var item in typesFromAssemblies)
-            {
-                Console.WriteLine(item.Name);
-            }
-        }
+            DayLineItem[] days = JsonConvert.DeserializeObject<DayLineItem[]>(File.ReadAllText("./SampleStoreHours.json"));
 
-        private static bool IsSubclassOfRawGeneric(Type generic, Type toCheck)
-        {
-            while (toCheck != null && toCheck != typeof(object) && generic != toCheck)
+            foreach (var item in days)
             {
-                var cur = toCheck.IsGenericType ? toCheck.GetGenericTypeDefinition() : toCheck;
-                if (generic == cur)
-                {
-                    return true;
-                }
-                toCheck = toCheck.BaseType;
+                Console.WriteLine(item.Day);
+                Console.WriteLine(item.Start);
             }
-            return false;
         }
     }
 }

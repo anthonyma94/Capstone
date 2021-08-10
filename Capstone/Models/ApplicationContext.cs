@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -8,7 +10,6 @@ namespace Capstone.Models
     public class ApplicationContext : DbContext
     {
         public DbSet<Store> Stores { get; set; }
-        public DbSet<StoreHour> StoreHours { get; set; }
         public DbSet<StoreHourLineItem> StoreHourLineItems { get; set; }
         public DbSet<Schedule> Schedules { get; set; }
         public DbSet<Person> Person { get; set; }
@@ -33,6 +34,34 @@ namespace Capstone.Models
         {
             //base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<Schedule>().Property(x => x.IsDefault).HasDefaultValue(false);
+
+            modelBuilder.Entity<StoreHourLineItem>().HasOne(x => x.Day).WithMany().OnDelete(DeleteBehavior.Cascade);
+
+            // Store & Store Hours
+            var hours = JsonConvert.DeserializeObject<DayLineItem[]>(File.ReadAllText("./Models/Samples/SampleStoreHours.json"));
+            modelBuilder.Entity<DayLineItem>().HasData(hours);
+
+            Store store = new Store
+            {
+                Name = "My Store"
+            };
+            modelBuilder.Entity<Store>().HasData(store);
+
+            var storeHours = new List<StoreHourLineItem>();
+            foreach (var i in hours)
+            {
+                storeHours.Add(new StoreHourLineItem
+                {
+                    Store = store,
+                    Day = i
+                });
+            }
+            modelBuilder.Entity<StoreHourLineItem>().HasData(storeHours.Select(i => new
+            {
+                Id = i.Id,
+                DayId = i.Day.Id,
+                StoreId = i.Store.Id
+            }));
 
             // Job Title
             JobTitle[] titles = new JobTitle[]

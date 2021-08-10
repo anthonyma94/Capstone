@@ -1,0 +1,27 @@
+.menuContainer {
+  @apply relative;
+}
+
+.menu {
+  @apply bg-white rounded-lg absolute -left-3 opacity-0 invisible -translate-y-5 z-10 overflow-hidden;
+  top: 10px;
+  width: 200px;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.3);
+  transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s;
+}
+
+.active {
+  @apply opacity-100 visible translate-y-0;
+}
+
+.menu ul {
+  @apply p-0 m-0;
+}
+
+.menu li {
+  @apply text-gray-800 no-underline py-2 px-3 hover:bg-gray-400 hover:cursor-pointer;
+}
+
+.menu li:not(:last-of-type) {
+  @apply border-b border-gray-400;
+}

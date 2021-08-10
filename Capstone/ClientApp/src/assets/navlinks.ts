@@ -1,7 +1,7 @@
-import NewEmployee from "../components/NewEmployee";
-import StoreInfo from "../components/StoreInfo";
-import Employees from "../Employees";
-import Login from "../Login";
+import NewEmployee from "../pages/NewEmployee";
+import StoreInfo from "../pages/StoreInfo";
+import Employees from "../pages/Employees";
+import Login from "../pages/Login";
 
 interface Links {
     text: string;
@@ -24,7 +24,7 @@ export default [
     },
     {
         text: "Create New Employee",
-        link: "/newEmployee",
+        link: "/employee/:id?",
         page: NewEmployee,
         includeInNavbar: false,
     },

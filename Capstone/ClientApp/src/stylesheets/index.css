@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply mx-auto;
+    @apply mx-auto max-w-max;
   }
   main {
     @apply max-w-screen-2xl mx-auto p-10 font-sans;

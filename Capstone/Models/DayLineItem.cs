@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -19,15 +20,16 @@ namespace Capstone.Models
             SATURDAY = 6
         }
 
-        public DayNames Day { get; set; }
+        public DayNames? Day { get; set; }
 
         [DataType(DataType.Date)]
-        public DateTime Date { get; set; }
+        [Column(TypeName = "Date")]
+        public DateTime? Date { get; set; }
 
         [Required, DataType(DataType.Time)]
-        public DateTime Start { get; set; }
+        public TimeSpan Start { get; set; }
 
         [Required, DataType(DataType.Time)]
-        public DateTime End { get; set; }
+        public TimeSpan End { get; set; }
     }
 }

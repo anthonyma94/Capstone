@@ -35,7 +35,7 @@ namespace Capstone
 
             services.AddTransient<PersonRepository>();
 
-            services.AddControllers();
+            services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
             services.AddSpaStaticFiles(config =>
             {
                 config.RootPath = "ClientApp/build";
