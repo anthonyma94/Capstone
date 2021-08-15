@@ -4,7 +4,7 @@ import Input from "../components/Input";
 import Button from "../components/Button";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "../services/hooks";
-import IPerson, { fetchPeople, selectPeople } from "../models/person";
+import { fetchPeople, selectPeople } from "../models/person";
 import InputSelect from "../components/InputSelect";
 
 const NewEmployee = () => {
@@ -30,9 +30,7 @@ const NewEmployee = () => {
   // Populate data from API
   useEffect(() => {
     if (people.status === "idle") dispatch(fetchPeople());
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [people.status, dispatch]);
 
   useEffect(() => {
     if (id) {

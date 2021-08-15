@@ -38,7 +38,8 @@ namespace Capstone
             services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
             services.AddSpaStaticFiles(config =>
             {
-                config.RootPath = "ClientApp/build";
+                //config.RootPath = "ClientApp/build";
+                config.RootPath = "ClientAppVue/dist";
             });
         }
 
@@ -69,11 +70,13 @@ namespace Capstone
 
             app.UseSpa(spa =>
             {
-                spa.Options.SourcePath = "ClientApp";
+                //spa.Options.SourcePath = "ClientApp";
+                spa.Options.SourcePath = "ClientAppVue";
 
                 if (env.IsDevelopment())
                 {
-                    spa.UseReactDevelopmentServer("start");
+                    spa.UseProxyToSpaDevelopmentServer("http://localhost:8080");
+                    //spa.UseReactDevelopmentServer("start");
                 }
             });
         }

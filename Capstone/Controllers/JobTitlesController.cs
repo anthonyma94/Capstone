@@ -17,20 +17,5 @@ namespace Capstone.Controllers
         public JobTitlesController(JobTitleRepository repo) : base(repo)
         {
         }
-
-        //[HttpPost]
-        //public async Task<ActionResult<JobTitle>> Create(string job)
-        //{
-        //    var res = await repo.GetAll();
-        //    if (res.Exists(x => x.Name.ToLower() == job.ToLower().Trim()))
-        //    {
-        //        return BadRequest();
-        //    }
-
-        //    return await base.Create(new JobTitle
-        //    {
-        //        Name = job
-        //    });
-        //}
     }
 }

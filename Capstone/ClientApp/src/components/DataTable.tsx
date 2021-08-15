@@ -37,24 +37,6 @@ const DataTable = (props: TableProps) => {
   const validateProps = () => {
     const tmp = Object.assign({}, props);
 
-    // tmp.columns = tmp.columns.map((column) => {
-    //   let col = column;
-    //   if (column.selector && typeof column.selector === "string") {
-    //     let selector = column.selector;
-    //     col = {
-    //       ...col,
-    //       selector: (row) => row[selector],
-    //     };
-    //   }
-    //   if (column.sortable === undefined) {
-    //     col = {
-    //       ...col,
-    //       sortable: true,
-    //     };
-    //   }
-    //   return col;
-    // });
-
     if (!tmp.pagination) tmp.pagination = Boolean(tmp.data.length > 10);
 
     setInternalProps(tmp);
