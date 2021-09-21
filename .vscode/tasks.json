@@ -1,0 +1,21 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "npm",
+            "script": "dev",
+            "path": "packages/server/",
+            "problemMatcher": [],
+            "label": "server - dev",
+            "detail": "nodemon src/index.ts"
+        },
+        {
+            "type": "npm",
+            "script": "dev",
+            "path": "packages/client/",
+            "problemMatcher": [],
+            "label": "client - dev",
+            "detail": "vue-cli-service serve"
+        }
+    ]
+}

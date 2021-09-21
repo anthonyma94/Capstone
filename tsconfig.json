@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "allowSyntheticDefaultImports": true,
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        "sourceMap": true,
+        "removeComments": true,
+        "strict": true,
+        "strictNullChecks": true,
+        "strictFunctionTypes": true,
+        "alwaysStrict": true,
+        "noFallthroughCasesInSwitch": true,
+        "experimentalDecorators": true,
+        "module": "commonjs",
+        "baseUrl": ".",
+        "declaration": true,
+        "declarationMap": true,
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "moduleResolution": "node",
+        "target": "es2015",
+        "composite": true
+    },
+    "exclude": ["**/node_modules"]
+}
