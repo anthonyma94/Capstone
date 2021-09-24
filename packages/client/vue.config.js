@@ -1,3 +1,4 @@
+const path = require("path");
 module.exports = {
     pages: {
         index: {
@@ -13,6 +14,7 @@ module.exports = {
             }
         }
     },
+    outputDir: path.resolve(__dirname, "../../dist/public"),
     configureWebpack: {
         devtool: "source-map"
         // module: {

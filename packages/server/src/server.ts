@@ -8,6 +8,7 @@ import { buildProviderModule } from "inversify-binding-decorators";
 import { InversifyExpressServer } from "inversify-express-utils";
 import { DI_TYPES } from "./types";
 import bindings from "./config/inversify";
+import * as path from "path";
 
 export default class Server {
     protected app?: Application;
@@ -28,6 +29,16 @@ export default class Server {
                         >(DI_TYPES.DATABASE_CONNECTION);
                         RequestContext.create(connection.em, next);
                     });
+                    if (process.env.NODE_ENV === "production") {
+                        console.log("App is in production.");
+                        console.log(
+                            "public path is at",
+                            path.resolve(__dirname, "public")
+                        );
+                        app.use(
+                            express.static(path.resolve(__dirname, "public"))
+                        );
+                    }
                 });
                 this.app = this.server.build();
                 this.app.listen(process.env.SERVER_PORT, () => {

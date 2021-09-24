@@ -1,7 +1,12 @@
 import EmployeesVue from "@/views/Employees.vue";
 import EmployeeDetails from "@/views/EmployeeDetails.vue";
 import StoreInfo from "@/views/StoreInfo.vue";
-import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router";
+import {
+    createRouter,
+    createWebHashHistory,
+    createWebHistory,
+    RouteRecordRaw
+} from "vue-router";
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -30,7 +35,7 @@ const routes: Array<RouteRecordRaw> = [
 ];
 
 const router = createRouter({
-    history: createWebHashHistory(),
+    history: createWebHistory(),
     routes
 });
 

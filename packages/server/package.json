@@ -39,8 +39,7 @@
         ]
     },
     "scripts": {
-        "clean": "rimraf dist && rimraf tsconfig.tsbuildinfo",
-        "compile": "tsc --build && cp \"./package.json\" .dist",
+        "build": "rimraf ../../dist && rimraf ../../tsconfig.tsbuildinfo && tsc --build",
         "dev": "nodemon src/index.ts",
         "init-db": "ts-node -r dotenv/config src/seed-database"
     },
