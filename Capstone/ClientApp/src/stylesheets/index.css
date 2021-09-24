@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply mx-auto max-w-max;
+  }
+  main {
+    @apply max-w-screen-2xl mx-auto p-10 font-sans;
+  }
+
+  h1 {
+    @apply font-bold text-2xl;
+  }
+
+  h2 {
+    @apply font-bold text-xl;
+  }
+
+  hr {
+    @apply my-5;
+  }
+
+  .rdt_Table [role="columnheader"] div {
+    @apply overflow-visible;
+  }
+}
+
+@layer components {
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-800;
+  }
+
+  .btn-warning {
+    @apply bg-yellow-400 hover:bg-yellow-600;
+  }
+}
