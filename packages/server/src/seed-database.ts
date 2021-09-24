@@ -57,7 +57,14 @@ dayjs.extend(customParse);
     em.persist(store);
     const storeHours = sampleHours.map(
         hour =>
-            new StoreHour(store, new DayItem(hour.start, hour.end, hour.day))
+            new StoreHour(
+                store,
+                new DayItem({
+                    start: hour.start,
+                    end: hour.end,
+                    day: hour.day
+                })
+            )
     );
     em.persist(storeHours);
 
@@ -92,6 +99,7 @@ dayjs.extend(customParse);
 
         const person = new Person({
             ...samplePerson,
+            maxWeeklyHours: 0,
             jobTitle
         });
 
@@ -99,7 +107,13 @@ dayjs.extend(customParse);
 
         if (person.role === "FT") {
             storeHours.forEach(hour => {
-                availabilities.push(new Availability(person, true, hour.day));
+                availabilities.push(
+                    new Availability({
+                        person,
+                        isApproved: true,
+                        day: hour.day
+                    })
+                );
             });
             person.maxWeeklyHours = 40;
         } else {
@@ -146,13 +160,17 @@ dayjs.extend(customParse);
                     else randomEnd = randomEnd.add(180, "minutes");
                 }
 
-                const dayItem = new DayItem(
-                    randomStart.format("HH:mm:ss"),
-                    randomEnd.format("HH:mm:ss"),
+                const dayItem = new DayItem({
+                    start: randomStart.format("HH:mm:ss"),
+                    end: randomEnd.format("HH:mm:ss"),
                     day
-                );
+                });
 
-                const availability = new Availability(person, true, dayItem);
+                const availability = new Availability({
+                    person,
+                    isApproved: true,
+                    day: dayItem
+                });
                 availabilities.push(availability);
             }
 

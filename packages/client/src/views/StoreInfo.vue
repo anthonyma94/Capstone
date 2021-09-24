@@ -13,7 +13,10 @@
             class="flex-grow-0"
             :disabled="v$.storeName.$invalid"
             @click="
-              store.CHANGE_NAME({ id: store.GET_ALL().id, name: storeName })
+              storeModule.CHANGE_NAME({
+                id: storeModule.GET_ALL.value.id,
+                name: storeName
+              })
             "
           >
             Save
@@ -27,11 +30,6 @@
             Save
           </Button>
         </div>
-        <!-- {!validStoreHours && (
-            <span class="text-red-400">
-              Some of your hours are invalid. Please check and fix them.
-            </span>
-          )} -->
         <table class="table-fixed w-full max-w-sm">
           <thead>
             <tr>
@@ -99,7 +97,7 @@
       <Button
         @click="
           () => {
-            jobStore.ADD_TITLE(newJobTitle);
+            jobModule.ADD_TITLE(newJobTitle);
             newJobTitle = '';
             v$.newJobTitle.$reset();
           }
@@ -123,30 +121,32 @@
     </div>
 
     <DataTable
-      :columns="titleCols"
-      :data="jobs"
-      size="sm"
-      selection-mode="multiple"
-      v-model:selection="selectedJobTitles"
-    >
-    </DataTable>
+      v-model="jobModule.GET_ALL_WITH_PEOPLE_AMOUNT"
+      :cols="titleCols"
+      :editable="false"
+    />
   </div>
 </template>
 <script setup lang="ts">
 // Prop and prop interface
 
 import { computed, ref, watchEffect } from "vue";
-import Input from "@/components/Input.vue";
+import Input from "@/components/inputs/Input.vue";
 import Button from "@/components/Button.vue";
-import useStore from "@/store/modules/store/hook";
-import useJobTitle from "@/store/modules/jobTitle/hook";
 import DataTable from "@/components/DataTable.vue";
 import { required } from "@vuelidate/validators";
 import useVuelidate from "@vuelidate/core";
+import { getModule } from "vuex-module-decorators";
+import StoreModule from "@/store/modules/store";
+import { useStore } from "@/store";
+import JobTitleModule from "@/store/modules/jobTitle";
 
 // Use hooks
-const store = useStore();
-const jobStore = useJobTitle();
+// const store = useStore();
+// const jobStore = useJobTitle();
+
+const storeModule = getModule(StoreModule, useStore());
+const jobModule = getModule(JobTitleModule, useStore());
 
 // Data
 const storeName = ref("");
@@ -186,46 +186,41 @@ const dayNames = [
 ];
 const titleCols = [
   {
-    title: "Role",
-    selector: "name"
-  },
-  {
-    title: "Number of Employees",
-    selector: "numOfEmps"
+    name: "Number of Employees",
+    id: "numOfEmps"
   }
 ];
 
 // Computed
-
-const jobs = computed(jobStore.GET_ALL_WITH_PEOPLE_AMOUNT);
 
 // Methods
 
 const onDelete = () => {
   const ids = selectedJobTitles.value.map((i: any) => i.id);
   ids.forEach((i: string) => {
-    jobStore.DELETE_DATA(i);
+    jobModule.DELETE_DATA(i);
   });
 };
 
 // Watchers
 // Sets store name and hours if vuex state changes
 watchEffect(() => {
-  storeName.value = store.GET_ALL().name;
-  const hours = storeHours.value.map((item, index) => {
-    const hour = store
-      .GET_ALL()
-      .storeHours.find(item => item.day.day === index);
-    if (hour) {
-      return {
-        start: hour.day.start,
-        end: hour.day.end,
-        id: hour.day.id
-      };
-    }
-    return item;
-  });
-  storeHours.value = hours;
+  const store = storeModule.GET_ALL.value;
+  if (Object.keys(store).length > 0) {
+    storeName.value = store.name;
+    const hours = storeHours.value.map((item, index) => {
+      const hour = store.storeHours.find(item => item.day.day === index);
+      if (hour) {
+        return {
+          start: hour.day.start,
+          end: hour.day.end,
+          id: hour.day.id
+        };
+      }
+      return item;
+    });
+    storeHours.value = hours;
+  }
 });
 </script>
 <style scoped lang="postcss"></style>

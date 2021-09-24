@@ -16,8 +16,13 @@ export default class Availability extends BaseEntity {
     @ManyToOne()
     day!: DayItem;
 
-    constructor(person: Person, isApproved: boolean, day: DayItem) {
+    constructor(options: {
+        person: Person;
+        isApproved: boolean;
+        day: DayItem;
+    }) {
         super();
+        const { person, isApproved, day } = options;
         this.person = person;
         this.isApproved = isApproved;
         this.day = day;

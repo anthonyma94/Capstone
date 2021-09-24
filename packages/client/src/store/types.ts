@@ -3,10 +3,10 @@ import { PersonState } from "./modules/person/types";
 import { StoreState } from "./modules/store/types";
 
 export enum MutationTypes {
-    SET_DATA = "SET_DATA",
-    UPDATE_DATA = "UPDATE_DATA",
-    SET_STATUS = "SET_STATUS",
-    REMOVE_DATA = "REMOVE_DATA"
+    SET_DATA = "MUTATE_SET_DATA",
+    UPDATE_DATA = "MUTATE_UPDATE_DATA",
+    SET_STATUS = "MUTATE_SET_STATUS",
+    REMOVE_DATA = "MUTATE_REMOVE_DATA"
 }
 
 export enum ActionTypes {

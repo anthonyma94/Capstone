@@ -55,8 +55,8 @@ export abstract class BaseService<T extends BaseEntity> {
             updateNestedEntities: true
         });
         await this.repo.flush();
-        console.log(util.inspect(item, { depth: null, colors: true }));
-        console.log(item);
+        // console.log(util.inspect(item, { depth: null, colors: true }));
+        // console.log(item);
         return item;
     };
 

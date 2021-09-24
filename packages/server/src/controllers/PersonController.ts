@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { inject } from "inversify";
 import { Person } from "../entities/Person";
 import PersonService from "../services/PersonService";
-import { Controller, Post, Put } from "../utils/decorators";
+import { Controller, Delete, Post, Put } from "../utils/decorators";
 import { BaseController } from "./BaseController";
 
 @Controller()
@@ -25,9 +25,24 @@ export default class PersonController extends BaseController<
                 req.params.id,
                 req.body
             );
-            return this.json(res, 204);
+            return this.json(res);
         } catch (e) {
             return this.badRequest();
+        }
+    }
+
+    @Delete("/:id/availability")
+    public async removeAvailabilities(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) {
+        try {
+            await this.service.deleteAvailability(req.body);
+
+            return this.statusCode(200);
+        } catch (e) {
+            return this.badRequest(e as string);
         }
     }
 

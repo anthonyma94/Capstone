@@ -1,13 +1,6 @@
-// export default interface DayItem {
-//     id: string;
-//     day?: number;
-//     date?: string;
-//     start: string;
-//     end: string;
-// }
-
-import { DateType, Enum, Property, TimeType } from "@mikro-orm/core";
+import { DateType, Enum, Property } from "@mikro-orm/core";
 import { Entity } from "../utils/decorators";
+import { TimeType } from "../config/mikro-orm.config";
 import BaseEntity from "./BaseEntity";
 
 @Entity()
@@ -25,13 +18,14 @@ export default class DayItem extends BaseEntity {
     @Property({ type: TimeType })
     end!: string;
 
-    constructor(
-        start: string,
-        end: string,
-        day?: DayNames | number,
-        date?: Date
-    ) {
+    constructor(params: {
+        start: string;
+        end: string;
+        day?: DayNames | number;
+        date?: Date;
+    }) {
         super();
+        const { start, end, day, date } = params;
         if (day === undefined && !date) {
             throw new Error("DayItem must have either a day or date.");
         }
