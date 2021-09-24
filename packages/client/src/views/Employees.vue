@@ -2,51 +2,48 @@
   <div>
     <div className="flex justify-between">
       <h1>Employees</h1>
-      <Button href="/employees/new">Create New</Button>
+      <!-- <Button href="/employees/new">Create New</Button> -->
     </div>
     <DataTable
-      :columns="columns"
-      :data="persons"
-      selection-mode="single"
-      @selected="e => $router.push(`/employees/${e.id}`)"
+      v-if="persons.length > 0"
+      :cols="columns"
+      v-model="persons"
+      key="id"
+      :selectableRow="true"
+      :editable="false"
+      :deletable="false"
+      @rowSelect="e => $router.push(`/employees/${e}`)"
     />
   </div>
 </template>
 <script setup lang="ts">
-import usePerson from "@/store/modules/person/hook";
 import { computed } from "@vue/reactivity";
 import DataTable from "@/components/DataTable.vue";
-import Button from "@/components/Button.vue";
+import { getModule } from "vuex-module-decorators";
+import PersonModule from "@/store/modules/person";
+import { useStore } from "@/store";
 
-const { GET_ALL } = usePerson();
+const personModule = getModule(PersonModule, useStore());
 
-const columns: InstanceType<typeof DataTable>["columns"] = [
+const columns: InstanceType<typeof DataTable>["cols"] = [
   {
-    title: "First Name",
-    selector: "firstName"
-  },
-  {
-    title: "Last Name",
-    selector: "lastName"
-  },
-  {
-    title: "Role",
-    selector: "role"
-  },
-  {
-    title: "Job Title",
-    selector: "jobTitle"
-  },
-  {
-    title: "Availability",
-    selector: "availability"
-  },
-  {
-    title: "Max Hours",
-    selector: "maxWeeklyHours"
+    name: "Max Hours",
+    id: "maxWeeklyHours"
   }
 ];
 
-const persons = computed<any>(GET_ALL);
+const persons = computed<any>(() =>
+  personModule.GET_ALL.value.map(item => {
+    return {
+      id: item.id,
+      firstName: item.firstName,
+      lastName: item.lastName,
+      role: item.role,
+      jobTitle: item.jobTitle.name,
+      availability: "",
+      maxWeeklyHours: item.maxWeeklyHours
+    };
+  })
+);
 </script>
 <style scoped lang="postcss"></style>

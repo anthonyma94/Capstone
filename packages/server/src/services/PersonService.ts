@@ -1,9 +1,17 @@
-import { EntityRepository, FindOneOptions, FindOptions } from "@mikro-orm/core";
+import {
+    EntityRepository,
+    FindOneOptions,
+    FindOptions,
+    wrap
+} from "@mikro-orm/core";
 import { provide } from "inversify-binding-decorators";
 import Availability from "../entities/Availability";
 import { Person } from "../entities/Person";
 import { InjectRepo } from "../utils/decorators";
 import { BaseService } from "./BaseService";
+
+import util from "util";
+import DayItem from "../entities/DayItem";
 
 @provide(PersonService)
 export default class PersonService extends BaseService<Person> {
@@ -39,26 +47,61 @@ export default class PersonService extends BaseService<Person> {
         return res;
     };
 
-    public async addAvailabilities(id: string, availabilities: Availability[]) {
-        const person = await this.getOne(id);
-        if (!person) throw new Error("No person found with ID.");
+    public update = async (entity: Person) => {
+        const item = await this.getOne(entity.id);
+        const data: Partial<Person> = entity;
+        if (data.availabilities) delete data.availabilities;
 
-        person.availabilities.add(...availabilities);
-        await this.repo.flush();
-    }
+        // console.log(data);
 
-    public async deleteAvailability(availability: Availability) {
-        const person = await this.getOne(availability.person.id);
-        if (!person) throw new Error("No person found with ID.");
+        const res = wrap(item).assign(data, {
+            merge: true,
+            mergeObjects: true
+        });
 
-        person.availabilities.remove(availability);
-        await this.repo.flush();
-    }
+        this.repo.flush();
+        return res;
+    };
 
-    public async updateAvailability(availability: Availability) {
+    public addAvailabilities = async (
+        id: string,
+        availabilities: Availability[]
+    ) => {
+        try {
+            const person = await this.getOne(id);
+            for (let i of availabilities) {
+                const item = new Availability({
+                    ...i,
+                    day: new DayItem(i.day),
+                    person
+                });
+                this.availabilityRepo.persist(item);
+                person.availabilities.add(item);
+            }
+            await this.repo.flush();
+            return person;
+        } catch (e) {
+            console.error(e);
+            throw e;
+        }
+    };
+
+    public deleteAvailability = async (availability: Availability) => {
+        const item = await this.availabilityRepo.findOneOrFail({
+            id: availability.id
+        });
+        // const person = await this.getOne(availability.person.id);
+        // if (!person) throw new Error("No person found with ID.");
+        await this.repo.removeAndFlush(item);
+
+        // person.availabilities.remove(availability);
+        // await this.repo.flush();
+    };
+
+    public updateAvailability = async (availability: Availability) => {
         const person = await this.getOne(availability.person.id);
         if (!person) throw new Error("No person found with ID.");
 
         await this.repo.persistAndFlush(availability);
-    }
+    };
 }

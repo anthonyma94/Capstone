@@ -8,35 +8,28 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
 import { watchEffect } from "vue-demi";
+import { getModule } from "vuex-module-decorators";
 import Navbar from "./components/Navbar.vue";
-import useJobTitle from "./store/modules/jobTitle/hook";
-import usePerson from "./store/modules/person/hook";
-import useStore from "./store/modules/store/hook";
+import PersonModule from "./store/modules/person";
+import { useStore as useVuexStore } from "./store";
 import { LoadingTypes } from "./store/types";
+import JobTitleModule from "./store/modules/jobTitle";
+import StoreModule from "./store/modules/store";
 
-const personStore = usePerson();
-const storeStore = useStore();
-const jobStore = useJobTitle();
-
-const statuses = computed(() => {
-  return {
-    person: personStore.GET_STATUS(),
-    store: storeStore.GET_STATUS(),
-    job: jobStore.GET_STATUS()
-  };
-});
+const personModule = getModule(PersonModule, useVuexStore());
+const storeModule = getModule(StoreModule, useVuexStore());
+const jobModule = getModule(JobTitleModule, useVuexStore());
 
 watchEffect(() => {
-  if (statuses.value.person === LoadingTypes.IDLE) {
-    personStore.INITIALIZE_DATA();
+  if (personModule.GET_STATUS.value === LoadingTypes.IDLE) {
+    personModule.INITIALIZE_DATA();
   }
-  if (statuses.value.store === LoadingTypes.IDLE) {
-    storeStore.INITIALIZE_DATA();
+  if (storeModule.GET_STATUS.value === LoadingTypes.IDLE) {
+    storeModule.INITIALIZE_DATA();
   }
-  if (statuses.value.job === LoadingTypes.IDLE) {
-    jobStore.INITIALIZE_DATA();
+  if (jobModule.GET_STATUS.value === LoadingTypes.IDLE) {
+    jobModule.INITIALIZE_DATA();
   }
 });
 </script>

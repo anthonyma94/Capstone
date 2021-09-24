@@ -73,11 +73,11 @@ export default class StoreController extends BaseController<
             // New item
             if (!item.id) {
                 if (item.start && item.end) {
-                    const newDay = new DayItem(
-                        item.start,
-                        item.end,
-                        i as DayNames
-                    );
+                    const newDay = new DayItem({
+                        start: item.start,
+                        end: item.end,
+                        day: i as DayNames
+                    });
                     const newStoreHour = new StoreHour(store, newDay);
                     await this.storeHourService.add(newStoreHour);
                 }

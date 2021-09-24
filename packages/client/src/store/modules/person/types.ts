@@ -9,6 +9,7 @@ export interface Person {
     address: string;
     province: string;
     postal: string;
+    city: string;
     jobTitle: JobTitle;
     role: "FT" | "PT";
     pay: number;
@@ -22,7 +23,9 @@ export interface Person {
 }
 
 export enum PersonActionTypes {
-    UPDATE_AVAILABILITY = "UPDATE_AVAILABILITY"
+    UPDATE_AVAILABILITY = "UPDATE_AVAILABILITY",
+    ADD_AVAILBILITY = "ADD_AVAILABILITY",
+    REMOVE_AVAILABILITY = "REMOVE_AVAILABILITY"
 }
 
 export interface PersonState extends DefaultState<Person[]> {}

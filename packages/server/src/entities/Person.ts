@@ -19,6 +19,9 @@ export class Person extends BaseEntity {
     address!: string;
 
     @Property()
+    city!: string;
+
+    @Property()
     province!: string;
 
     @Property()
@@ -51,6 +54,7 @@ export class Person extends BaseEntity {
             lastName: string;
             address: string;
             province: string;
+            city: string;
             postal: string;
             role: string;
             pay: number;
@@ -65,6 +69,7 @@ export class Person extends BaseEntity {
         this.lastName = params.lastName;
         this.address = params.address;
         this.province = params.province;
+        this.city = params.city;
         this.postal = params.postal;
         this.role = params.role;
         this.phone = params.phone;
