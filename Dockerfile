@@ -1,32 +1,32 @@
-FROM node:14-alpine AS staging
+# FROM node:14-alpine AS staging
 
-# RUN mkdir -p /app && chown -R node:node /app
-WORKDIR /staging
+# # RUN mkdir -p /app && chown -R node:node /app
+# WORKDIR /staging
 
-# RUN yarn global add tsc @vue/cli @vue/cli-service lerna
+# # RUN yarn global add tsc @vue/cli @vue/cli-service lerna
 
-# USER node
-# root
-COPY package.json .
-COPY yarn.lock .
-COPY lerna.json .
+# # USER node
+# # root
+# COPY package.json .
+# COPY yarn.lock .
+# COPY lerna.json .
 
-# server
-COPY packages/server/package.json ./packages/server/
+# # server
+# COPY packages/server/package.json ./packages/server/
 
-# client
-COPY packages/client/package.json ./packages/client/
+# # client
+# COPY packages/client/package.json ./packages/client/
 
-RUN yarn install --frozen-lockfile
-RUN npx lerna bootstrap
+# RUN yarn install --frozen-lockfile
+# RUN npx lerna bootstrap
 
-# build
-COPY . .
-RUN cd packages/server && npx tsc --build
-RUN cd packages/client && yarn build
-# RUN npx lerna run build
+# # build
+# COPY . .
+# RUN cd packages/server && npx tsc --build
+# RUN cd packages/client && yarn build
+# # RUN npx lerna run build
 
-RUN rm -rf node_modules
+# RUN rm -rf node_modules
 
 FROM node:14-alpine AS prod
 
@@ -48,16 +48,13 @@ COPY packages/client/package.json ./packages/client/
 
 RUN rm -rf node_modules
 
-RUN yarn install --force
+RUN yarn install --frozen-lockfile
 # Has to be manually added for some reason
 RUN yarn add -W uuid 
 RUN npx lerna bootstrap
 RUN apk update && apk add bash
 
-COPY --from=staging /staging/dist/ /app/dist/
-
-
-# COPY --from=staging /staging/dist .
+COPY ./dist/ /app/dist/
 EXPOSE 3000
 
 CMD ["node", "/app/dist/index.js"]

@@ -31,10 +31,6 @@ export default class Server {
                     });
                     if (process.env.NODE_ENV === "production") {
                         console.log("App is in production.");
-                        console.log(
-                            "public path is at",
-                            path.resolve(__dirname, "public")
-                        );
                         app.use(
                             express.static(path.resolve(__dirname, "public"))
                         );

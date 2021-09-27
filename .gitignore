@@ -7,7 +7,7 @@ tsconfig.tsbuildinfo
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
-dist
+/packages/**/dist
 
 # User-specific files
 *.rsuser
