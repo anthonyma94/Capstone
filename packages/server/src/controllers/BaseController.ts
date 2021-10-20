@@ -16,12 +16,6 @@ export abstract class BaseController<
         super();
         this.service = _service;
     }
-    @Get("/")
-    public async get(req: Request, res: Response, next: NextFunction) {
-        const result = await this.service.getAll();
-
-        return this.json(result);
-    }
     @Get("/:id")
     public async find(req: Request, res: Response, next: NextFunction) {
         const result = await this.service.getOne(req.params.id);
@@ -33,5 +27,11 @@ export abstract class BaseController<
         if (!item) throw new Error("Item with ID not found.");
         await this.service.delete(item);
         return this.json(item, 200);
+    }
+    @Get("/")
+    public async get(req: Request, res: Response, next: NextFunction) {
+        const result = await this.service.getAll();
+
+        return this.json(result);
     }
 }

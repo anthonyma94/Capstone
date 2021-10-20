@@ -5,6 +5,7 @@ import { Entity } from "../utils/decorators";
 import Availability from "./Availability";
 import BaseEntity from "./BaseEntity";
 import { JobTitle } from "./JobTitle";
+import PersonScheduleItem from "./PersonScheduleItem";
 
 @Entity()
 @injectable()
@@ -47,6 +48,12 @@ export class Person extends BaseEntity {
         availability => availability.person
     )
     availabilities = new Collection<Availability>(this);
+
+    @OneToMany(
+        () => PersonScheduleItem,
+        x => x.person
+    )
+    scheduleItems = new Collection<PersonScheduleItem>(this);
 
     constructor(
         params: {

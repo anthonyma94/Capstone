@@ -80,7 +80,8 @@ module.exports = {
             },
             zIndex: {
                 "-1": "-1",
-                "-2": "-2"
+                "-2": "-2",
+                top: "9999"
             },
             minHeight: {
                 10: "2.5rem"

@@ -1,6 +1,7 @@
 import EmployeesVue from "@/views/Employees.vue";
 import EmployeeDetails from "@/views/EmployeeDetails.vue";
 import StoreInfo from "@/views/StoreInfo.vue";
+import Schedule from "@/views/Schedule.vue";
 import {
     createRouter,
     createWebHashHistory,
@@ -31,6 +32,11 @@ const routes: Array<RouteRecordRaw> = [
         path: "/store",
         name: "storeInfo",
         component: StoreInfo
+    },
+    {
+        path: "/schedule",
+        name: "schedule",
+        component: Schedule
     }
 ];
 

@@ -4,6 +4,7 @@
         "target": "esnext",
         "declaration": true,
         "module": "CommonJS",
+        "sourceMap": true,
         "outDir": "../../dist",
         "rootDir": "src",
         "lib": ["ESNext"],

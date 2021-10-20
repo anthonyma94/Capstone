@@ -1,10 +1,20 @@
-import dayjs from "dayjs";
-import customParse from "dayjs/plugin/customParseFormat";
+import "reflect-metadata";
+import { Container } from "inversify";
+import { buildProviderModule } from "inversify-binding-decorators";
+import bindings from "./config/inversify";
+import Scheduler from "./utils/scheduler";
 
-dayjs.extend(customParse);
-const start = dayjs("10:00:00", "HH:mm:ss");
-const end = dayjs("14:00:00", "HH:mm:ss");
+const initContainer = async (): Promise<Container> => {
+    const container = new Container();
+    await container.loadAsync(bindings);
 
-const minutes = end.diff(start, "minutes");
+    container.load(buildProviderModule());
+    return container;
+};
 
-console.log(end.format("HH:mm:ss"));
+(async function() {
+    const container = await initContainer();
+
+    const scheduler = container.get<Scheduler>(Scheduler);
+    await scheduler.schedule();
+})();

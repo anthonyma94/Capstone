@@ -3,6 +3,7 @@ import config from "./config/mikro-orm.config";
 import Store from "./entities/Store";
 import sampleHours from "./assets/samples/sampleStoreHours";
 import samplePeople from "./assets/samples/samplePeople";
+import sampleScheduleRules from "./assets/samples/sampleScheduleRules";
 import DayItem, { DayNames } from "./entities/DayItem";
 import StoreHour from "./entities/StoreHour";
 import { JobTitle } from "./entities/JobTitle";
@@ -10,6 +11,8 @@ import { Person } from "./entities/Person";
 import Availability from "./entities/Availability";
 import dayjs from "dayjs";
 import customParse from "dayjs/plugin/customParseFormat";
+import ScheduleRuleItem from "./entities/ScheduleRuleItem";
+import ScheduleRule from "./entities/ScheduleRule";
 dayjs.extend(customParse);
 
 (async function() {
@@ -191,6 +194,43 @@ dayjs.extend(customParse);
     });
 
     em.persist(people);
+
+    // Schedule Rules
+    const scheduleRules: Array<ScheduleRule> = [];
+
+    for (const i of sampleScheduleRules) {
+        scheduleRules.push(
+            new ScheduleRule({
+                day: new DayItem({
+                    start: i.day.start,
+                    end: i.day.end,
+                    day: i.day.day
+                })
+            })
+        );
+    }
+
+    em.persist(scheduleRules);
+
+    const scheduleRuleItems: Array<ScheduleRuleItem> = [];
+    for (const i of sampleScheduleRules) {
+        for (const j of i.rules) {
+            scheduleRuleItems.push(
+                new ScheduleRuleItem({
+                    scheduleRule: scheduleRules.find(
+                        x =>
+                            x.day.start === i.day.start &&
+                            x.day.end === i.day.end &&
+                            x.day.day === i.day.day
+                    )!,
+                    jobTitle: jobTitles.find(x => x.name === j.jobTitle)!,
+                    amount: j.amount
+                })
+            );
+        }
+    }
+
+    em.persist(scheduleRuleItems);
 
     await em.flush();
 

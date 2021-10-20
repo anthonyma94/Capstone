@@ -62,6 +62,15 @@
     </div>
     <hr />
     <h1>Shift Scheduling Rules</h1>
+    <Button @click="toggles.addShiftSchedule = !toggles.addShiftSchedule">
+      Add
+    </Button>
+    <AddShiftSchedulingModal v-model:visible="toggles.addShiftSchedule" />
+    <DataTable
+      v-model="scheduleRuleData"
+      :cols="scheduleRuleTitleCols"
+      :editable="false"
+    />
     <hr />
     <h1>Job Titles</h1>
     <div class="flex justify-around my-3">
@@ -140,6 +149,9 @@ import { getModule } from "vuex-module-decorators";
 import StoreModule from "@/store/modules/store";
 import { useStore } from "@/store";
 import JobTitleModule from "@/store/modules/jobTitle";
+import ScheduleRuleModule from "@/store/modules/scheduleRule";
+import AddShiftSchedulingModal from "@/components/dialogs/AddShiftSchedulingModal.vue";
+import dayjs from "dayjs";
 
 // Use hooks
 // const store = useStore();
@@ -147,6 +159,7 @@ import JobTitleModule from "@/store/modules/jobTitle";
 
 const storeModule = getModule(StoreModule, useStore());
 const jobModule = getModule(JobTitleModule, useStore());
+const scheduleRuleModule = getModule(ScheduleRuleModule, useStore());
 
 // Data
 const storeName = ref("");
@@ -162,7 +175,8 @@ const storeHours = ref<{ start: string; end: string; id?: string }[]>(
 );
 
 const toggles = ref({
-  addJob: false
+  addJob: false,
+  addShiftSchedule: false
 });
 
 const rules = {
@@ -191,7 +205,51 @@ const titleCols = [
   }
 ];
 
+const scheduleRuleTitleCols = [
+  {
+    name: "Day/Date",
+    id: "day"
+  },
+  {
+    name: "Total Billed Hours",
+    id: "billedHours"
+  }
+];
+
 // Computed
+const scheduleRuleData = computed(() => {
+  return scheduleRuleModule.GET_ALL.value.map(item => {
+    const start = dayjs(item.day.start, "HH:mm");
+    const end = dayjs(item.day.end, "HH:mm");
+    const duration = end.diff(start, "hour");
+    const emps = item.rules.reduce((acc, cur) => {
+      if (!(cur.jobTitle.name in acc)) {
+        acc[cur.jobTitle.name] = cur.amount;
+      } else {
+        acc[cur.jobTitle.name] += cur.amount;
+      }
+      acc.total = acc.total ? acc.total + cur.amount : cur.amount;
+      return acc;
+    }, {} as any);
+    return {
+      day: dayNames[item.day.day || 0],
+      start: item.day.start,
+      end: item.day.end,
+      employees: Object.keys(emps)
+        .sort((a, b) => {
+          if (a.toLowerCase() === "total") {
+            return 1;
+          } else if (b.toLowerCase() === "total") {
+            return -1;
+          } else return a.localeCompare(b);
+        })
+        .map(key => `${key.pascalToWords()}: ${emps[key]}`)
+        .join("\n"),
+      billedHours:
+        item.rules.reduce((acc, cur) => acc + cur.amount, 0) * duration
+    };
+  });
+});
 
 // Methods
 

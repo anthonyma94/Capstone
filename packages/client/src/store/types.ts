@@ -1,5 +1,6 @@
 import { JobTitleState } from "./modules/jobTitle/types";
 import { PersonState } from "./modules/person/types";
+import { ScheduleRuleState } from "./modules/scheduleRule/types";
 import { StoreState } from "./modules/store/types";
 
 export enum MutationTypes {
@@ -36,4 +37,5 @@ export interface RootState {
     person: PersonState;
     store: StoreState;
     jobTitle: JobTitleState;
+    scheduleRule: ScheduleRuleState;
 }

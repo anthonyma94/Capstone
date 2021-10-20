@@ -7,7 +7,7 @@
     ],
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "start:prod": "node -r dotenv/config dist/index.js dotenv_config_path=./.env.production",
+        "start:prod": "node -r dotenv/config dist/index.js dotenv_config_path=./.production.env",
         "build": "lerna run build"
     },
     "keywords": [],

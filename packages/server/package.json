@@ -30,7 +30,6 @@
             "ts": "ts-node -r dotenv/config"
         },
         "ignore": [
-            "./src/test.ts",
             "./src/seed-database.ts",
             "./src/assets/**/*"
         ],
@@ -41,7 +40,9 @@
     "scripts": {
         "build": "rimraf ../../dist && rimraf ../../tsconfig.tsbuildinfo && tsc --build",
         "dev": "nodemon src/index.ts",
-        "init-db": "ts-node -r dotenv/config src/seed-database"
+        "dev:inspect": "nodemon --inspect=5858 -e ts,tsx --exec node -r ts-node/register -r dotenv/config src/index.ts",
+        "dev:scheduler": "nodemon --inspect=5858 -e ts,tsx --exec node -r ts-node/register -r dotenv/config src/test.ts",
+        "init-db": "ts-node -r dotenv/config src/seed-database dotenv_config_path=./.env"
     },
     "devDependencies": {
         "@mikro-orm/cli": "^4.5.9",
@@ -53,6 +54,7 @@
         "reflect-metadata": "^0.1.13",
         "rimraf": "^3.0.2",
         "ts-node": "^10.2.1",
+        "ts-node-dev": "^1.1.8",
         "tsconfig-paths": "^3.11.0",
         "typescript": "^4.3.5"
     }
