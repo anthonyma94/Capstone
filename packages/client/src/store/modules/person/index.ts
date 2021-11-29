@@ -16,6 +16,7 @@ export default class PersonModule extends BaseModule<Person> {
 
     get [GetterTypes.GET_BY_ID]() {
         return (id: string) => {
+            // return computed(() => this.data.find(i => i.id === id)) as any;
             return computed(() => this.data.find(i => i.id === id));
         };
     }

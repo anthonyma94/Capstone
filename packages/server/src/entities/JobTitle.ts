@@ -7,8 +7,12 @@ export class JobTitle extends BaseEntity {
     @Property()
     name!: string;
 
-    constructor(name: string) {
+    @Property()
+    color!: string;
+
+    constructor(name: string, color: string) {
         super();
         this.name = name;
+        this.color = color;
     }
 }

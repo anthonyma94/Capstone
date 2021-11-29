@@ -1,8 +1,9 @@
 <template>
-  <div class="w-full" tabindex="0" ref="wrapper" @focusout="onBlur">
+  <div class="w-full" tabindex="-1" ref="wrapper" @focusout="onBlur">
     <div
       class="relative border-b-2 h-10 w-full focus-within:border-blue-500"
       :class="{ 'border-danger focus-within:border-danger': invalid }"
+      tabindex="-1"
     >
       <input
         class="absolute bottom-0 block w-full appearance-none focus:outline-none bg-transparent"
@@ -12,8 +13,9 @@
         ]"
         :placeholder="placeholder"
         :autofocus="autofocus"
-        type="text"
+        :type="props.type"
         :value="modelValue"
+        v-bind="$attrs"
         @input="onInput"
         @focus="onFocus"
         @keypress="onKeypress"
@@ -26,6 +28,7 @@
           { filled: isInFocus && modelValue !== '' },
           { invalid: invalid }
         ]"
+        tabindex="-1"
       >
         {{ placeholder }}
       </label>

@@ -2,11 +2,12 @@
   <div>
     <div class="flex justify-between">
       <h1>Employee Info</h1>
-      <Button @click="onSaveClick">Save</Button>
+      <Button v-if="authModule.IS_ADMIN" @click="onSaveClick">Save</Button>
     </div>
     <form>
       <div class="grid gap-4 grid-cols-4">
         <Input
+          :disabled="!authModule.IS_ADMIN"
           class="col-span-2"
           placeholder="First Name"
           v-model="data.firstName"
@@ -14,49 +15,63 @@
           :invalid="v$.firstName.$error"
         />
         <Input
+          :disabled="!authModule.IS_ADMIN"
           class="col-span-2"
           placeholder="Last Name"
           v-model="data.lastName"
         />
         <Input
+          :disabled="!authModule.IS_ADMIN"
           class="col-span-4"
           placeholder="Address"
           v-model="data.address"
         />
-        <Input class="col-span-2" placeholder="City" v-model="data.city" />
         <Input
+          :disabled="!authModule.IS_ADMIN"
+          class="col-span-2"
+          placeholder="City"
+          v-model="data.city"
+        />
+        <Input
+          :disabled="!authModule.IS_ADMIN"
           class="col-span-1"
           placeholder="Province"
           v-model="data.province"
         />
         <Input
+          :disabled="!authModule.IS_ADMIN"
           class="col-span-1"
           placeholder="Postal Code"
           v-model="data.postal"
         />
         <Input
+          :disabled="!authModule.IS_ADMIN"
           class="col-span-2 md:col-span-1"
           placeholder="Phone Number"
           v-model="data.phone"
         />
         <Select
+          :disabled="!authModule.IS_ADMIN"
           class="col-span-2 md:col-span-1"
           placeholder="Role"
           :options="['FT', 'PT']"
           v-model="data.role"
         />
         <Input
+          :disabled="!authModule.IS_ADMIN"
           class="col-span-2 md:col-span-1"
           placeholder="Wage"
           v-model="data.pay"
         />
         <Select
+          :disabled="!authModule.IS_ADMIN"
           class="col-span-2 md:col-span-1"
           placeholder="Job"
           :options="jobTitles.map(x => x.name).sort()"
           v-model="data.jobTitle"
         />
         <Input
+          :disabled="!authModule.IS_ADMIN"
           class="col-span-2 md:col-span-1"
           placeholder="Hours"
           v-model="data.maxWeeklyHours"
@@ -71,9 +86,13 @@
       :cols="availabilityCols"
       v-model="computedAvailabilities"
       @update:model-value="onAvailabilityUpdate"
+      :editable="authModule.IS_ADMIN"
+      :deletable="authModule.IS_ADMIN"
     >
       <template #toolbar>
-        <Button @click="showAddAvailability = !showAddAvailability"
+        <Button
+          v-if="authModule.IS_ADMIN"
+          @click="showAddAvailability = !showAddAvailability"
           >Add Availability</Button
         >
       </template>
@@ -98,15 +117,16 @@ import PersonModule from "@/store/modules/person";
 import { useStore } from "@/store";
 import JobTitleModule from "@/store/modules/jobTitle";
 import AddAvailabilityModal from "@/components/dialogs/AddAvailabilityModal.vue";
+import AuthModule from "@/store/modules/auth";
+import { convertTo12Hour, convertTo24Hour } from "@/services/dates";
 
 // Props and prop interface
 
 // Use hooks
-// const personHook = usePerson();
 const store = useStore();
 const personModule = getModule(PersonModule, store);
-// const jobHook = useJobTitle();
 const jobModule = getModule(JobTitleModule, store);
+const authModule = getModule(AuthModule, store);
 const route = useRoute();
 
 // Data
@@ -171,8 +191,8 @@ const computedAvailabilities = computed({
       return {
         id: i.id,
         day: dayNames[i.day.day!],
-        start: i.day.start,
-        end: i.day.end
+        start: convertTo12Hour(i.day.start),
+        end: convertTo12Hour(i.day.end)
       };
     }),
   set: async val => {
@@ -187,8 +207,8 @@ const computedAvailabilities = computed({
           isApproved: true,
           day: {
             id: "",
-            start: item.start,
-            end: item.end,
+            start: convertTo24Hour(item.start),
+            end: convertTo24Hour(item.end),
             day: parseInt(item.day)
           }
         }

@@ -1,10 +1,9 @@
 import { NextFunction, Request, Response } from "express";
-import { id, injectable } from "inversify";
+import { injectable } from "inversify";
 import { BaseHttpController } from "inversify-express-utils";
-import { v4 } from "uuid";
 import BaseEntity from "../entities/BaseEntity";
 import { BaseService } from "../services/BaseService";
-import { Delete, Get, Post } from "../utils/decorators";
+import { Delete, Get } from "../utils/decorators";
 
 @injectable()
 export abstract class BaseController<

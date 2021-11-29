@@ -8,9 +8,11 @@
             v-model="storeName"
             :invalid="v$.storeName.$error"
             error-text="Please enter a store name."
+            :disabled="!authModule.IS_ADMIN"
           />
           <Button
             class="flex-grow-0"
+            v-if="authModule.IS_ADMIN"
             :disabled="v$.storeName.$invalid"
             @click="
               storeModule.CHANGE_NAME({
@@ -26,7 +28,7 @@
       <div>
         <div class="flex justify-around">
           <h1>Store Hours</h1>
-          <Button>
+          <Button v-if="authModule.IS_ADMIN">
             Save
           </Button>
         </div>
@@ -46,6 +48,7 @@
                   placeholder="9:00"
                   :show-label="false"
                   v-model="storeHours[index].start"
+                  :disabled="!authModule.IS_ADMIN"
                 />
               </td>
               <td>
@@ -53,6 +56,7 @@
                   placeholder="18:00"
                   :show-label="false"
                   v-model="storeHours[index].end"
+                  :disabled="!authModule.IS_ADMIN"
                 />
               </td>
             </tr>
@@ -60,80 +64,82 @@
         </table>
       </div>
     </div>
-    <hr />
-    <h1>Shift Scheduling Rules</h1>
-    <Button @click="toggles.addShiftSchedule = !toggles.addShiftSchedule">
-      Add
-    </Button>
-    <AddShiftSchedulingModal v-model:visible="toggles.addShiftSchedule" />
-    <DataTable
-      v-model="scheduleRuleData"
-      :cols="scheduleRuleTitleCols"
-      :editable="false"
-    />
-    <hr />
-    <h1>Job Titles</h1>
-    <div class="flex justify-around my-3">
-      <div class="flex gap-2">
-        <Button @click="toggles.addJob = true">
-          <i class="pi pi-plus-circle pr-3"></i>
-          <span>Add</span>
-        </Button>
-      </div>
-      <div>
-        <div class="flex gap-2" :class="{ 'opacity-0': !selectedJobTitles }">
-          <!-- <Button class="btn-warning">
-            <i class="pi pi-pencil pr-3"></i>
-            <span>Edit</span>
-          </Button> -->
-          <Button class="btn-danger" @click="onDelete">
-            <i class="pi pi-trash pr-3"></i>
-            <span>Delete</span>
+    <div v-if="authModule.IS_ADMIN">
+      <hr />
+      <h1>Shift Scheduling Rules</h1>
+      <Button @click="toggles.addShiftSchedule = !toggles.addShiftSchedule">
+        Add
+      </Button>
+      <AddShiftSchedulingModal v-model:visible="toggles.addShiftSchedule" />
+      <DataTable
+        v-if="scheduleRuleData && scheduleRuleData.length > 0"
+        v-model="scheduleRuleData"
+        :cols="scheduleRuleTitleCols"
+        :editable="false"
+      />
+      <hr />
+      <h1>Job Titles</h1>
+      <div class="flex justify-around my-3">
+        <div class="flex gap-2">
+          <Button @click="toggles.addJob = true">
+            <i class="pi pi-plus-circle pr-3"></i>
+            <span>Add</span>
           </Button>
         </div>
+        <div>
+          <div class="flex gap-2" :class="{ 'opacity-0': !selectedJobTitles }">
+            <Button class="btn-danger" @click="onDelete">
+              <i class="pi pi-trash pr-3"></i>
+              <span>Delete</span>
+            </Button>
+          </div>
+        </div>
       </div>
-    </div>
-    <div
-      v-if="toggles.addJob"
-      class="flex justify-start max-w-xs gap-3 mx-auto mb-3"
-    >
-      <Input
-        v-model="newJobTitle"
-        placeholder="New Job Title"
-        :invalid="v$.newJobTitle.$error"
-        error-text="Please enter a job title."
+      <div
+        v-if="toggles.addJob"
+        class="flex justify-start max-w-xs gap-3 mx-auto mb-3"
+      >
+        <Input
+          v-model="newJobTitle"
+          placeholder="New Job Title"
+          :invalid="v$.newJobTitle.$error"
+          error-text="Please enter a job title."
+        />
+        <Button
+          @click="
+            () => {
+              jobModule.ADD_TITLE(newJobTitle);
+              newJobTitle = '';
+              v$.newJobTitle.$reset();
+            }
+          "
+          :disabled="v$.newJobTitle.$invalid"
+        >
+          Save
+        </Button>
+        <Button
+          class="btn-danger"
+          @click="
+            () => {
+              toggles.addJob = false;
+              newJobTitle = '';
+              v$.newJobTitle.$reset();
+            }
+          "
+        >
+          Cancel
+        </Button>
+      </div>
+      <DataTable
+        v-if="
+          jobModule.GET_ALL_WITH_PEOPLE_AMOUNT &&
+            jobModule.GET_ALL_WITH_PEOPLE_AMOUNT.length > 0
+        "
+        v-model="jobModule.GET_ALL_WITH_PEOPLE_AMOUNT"
+        :cols="titleCols"
+        :editable="false"
       />
-      <Button
-        @click="
-          () => {
-            jobModule.ADD_TITLE(newJobTitle);
-            newJobTitle = '';
-            v$.newJobTitle.$reset();
-          }
-        "
-        :disabled="v$.newJobTitle.$invalid"
-      >
-        Save
-      </Button>
-      <Button
-        class="btn-danger"
-        @click="
-          () => {
-            toggles.addJob = false;
-            newJobTitle = '';
-            v$.newJobTitle.$reset();
-          }
-        "
-      >
-        Cancel
-      </Button>
     </div>
-
-    <DataTable
-      v-model="jobModule.GET_ALL_WITH_PEOPLE_AMOUNT"
-      :cols="titleCols"
-      :editable="false"
-    />
   </div>
 </template>
 <script setup lang="ts">
@@ -152,14 +158,15 @@ import JobTitleModule from "@/store/modules/jobTitle";
 import ScheduleRuleModule from "@/store/modules/scheduleRule";
 import AddShiftSchedulingModal from "@/components/dialogs/AddShiftSchedulingModal.vue";
 import dayjs from "dayjs";
+import AuthModule from "@/store/modules/auth";
+import { convertTo12Hour, localecompareDaynames } from "@/services/dates";
 
 // Use hooks
-// const store = useStore();
-// const jobStore = useJobTitle();
 
 const storeModule = getModule(StoreModule, useStore());
 const jobModule = getModule(JobTitleModule, useStore());
 const scheduleRuleModule = getModule(ScheduleRuleModule, useStore());
+const authModule = getModule(AuthModule, useStore());
 
 // Data
 const storeName = ref("");
@@ -202,13 +209,18 @@ const titleCols = [
   {
     name: "Number of Employees",
     id: "numOfEmps"
+  },
+  {
+    id: "color",
+    show: false
   }
 ];
 
 const scheduleRuleTitleCols = [
   {
     name: "Day/Date",
-    id: "day"
+    id: "day",
+    sortFunc: localecompareDaynames
   },
   {
     name: "Total Billed Hours",
@@ -218,37 +230,40 @@ const scheduleRuleTitleCols = [
 
 // Computed
 const scheduleRuleData = computed(() => {
-  return scheduleRuleModule.GET_ALL.value.map(item => {
-    const start = dayjs(item.day.start, "HH:mm");
-    const end = dayjs(item.day.end, "HH:mm");
-    const duration = end.diff(start, "hour");
-    const emps = item.rules.reduce((acc, cur) => {
-      if (!(cur.jobTitle.name in acc)) {
-        acc[cur.jobTitle.name] = cur.amount;
-      } else {
-        acc[cur.jobTitle.name] += cur.amount;
-      }
-      acc.total = acc.total ? acc.total + cur.amount : cur.amount;
-      return acc;
-    }, {} as any);
-    return {
-      day: dayNames[item.day.day || 0],
-      start: item.day.start,
-      end: item.day.end,
-      employees: Object.keys(emps)
-        .sort((a, b) => {
-          if (a.toLowerCase() === "total") {
-            return 1;
-          } else if (b.toLowerCase() === "total") {
-            return -1;
-          } else return a.localeCompare(b);
-        })
-        .map(key => `${key.pascalToWords()}: ${emps[key]}`)
-        .join("\n"),
-      billedHours:
-        item.rules.reduce((acc, cur) => acc + cur.amount, 0) * duration
-    };
-  });
+  if (scheduleRuleModule.GET_ALL.value?.length > 0) {
+    return scheduleRuleModule.GET_ALL.value.map(item => {
+      const start = dayjs(item.day.start, "HH:mm");
+      const end = dayjs(item.day.end, "HH:mm");
+      const duration = end.diff(start, "hour");
+      const emps = item.rules.reduce((acc, cur) => {
+        if (!(cur.jobTitle.name in acc)) {
+          acc[cur.jobTitle.name] = cur.amount;
+        } else {
+          acc[cur.jobTitle.name] += cur.amount;
+        }
+        acc.total = acc.total ? acc.total + cur.amount : cur.amount;
+        return acc;
+      }, {} as any);
+      return {
+        day: dayNames[item.day.day || 0],
+        start: convertTo12Hour(item.day.start),
+        end: convertTo12Hour(item.day.end),
+        employees: Object.keys(emps)
+          .sort((a, b) => {
+            if (a.toLowerCase() === "total") {
+              return 1;
+            } else if (b.toLowerCase() === "total") {
+              return -1;
+            } else return a.localeCompare(b);
+          })
+          .map(key => `${key.pascalToWords()}: ${emps[key]}`)
+          .join("\n"),
+        billedHours:
+          item.rules.reduce((acc, cur) => acc + cur.amount, 0) * duration
+      };
+    });
+  }
+  return [];
 });
 
 // Methods

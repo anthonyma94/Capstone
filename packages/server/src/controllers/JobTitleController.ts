@@ -22,7 +22,10 @@ export default class JobTitleController extends BaseController<
         if (!req.body || !req.body.name) {
             throw new Error("Store must have a name.");
         }
-        const title = new JobTitle(req.body.name);
+        // Generate random color
+        const n = (Math.random() * 0xfffff * 1000000).toString(16);
+        const color = "#" + n.slice(0, 6);
+        const title = new JobTitle(req.body.name, color);
         const result = await this.service.add(title);
         return this.json(result, 201);
     }

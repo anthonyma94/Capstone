@@ -57,6 +57,7 @@ import { useStore } from "@/store";
 import { Person } from "@/store/modules/person/types";
 import { DayItem } from "@/store/modules/dayItem";
 import { useRoute } from "vue-router";
+import AuthModule from "@/store/modules/auth";
 // Prop and prop interface
 
 const props = defineProps<{

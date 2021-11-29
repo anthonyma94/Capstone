@@ -1,12 +1,12 @@
 import { Entity as ORMEntity, EntityOptions } from "@mikro-orm/core";
-import { decorate, injectable } from "inversify";
 import {
     controller,
     httpDelete,
     httpGet,
     httpPatch,
     httpPost,
-    httpPut
+    httpPut,
+    interfaces
 } from "inversify-express-utils";
 import {
     inject,
@@ -45,60 +45,62 @@ export interface RouteDefinition {
     methodName: string;
 }
 
-export const Controller = (path?: string) => (target: Function) => {
+export const Controller = (path?: string, ...middleware: any[]) => (
+    target: Function
+) => {
     // Uses controller name if no path is specified
     if (!path) {
         path = "/" + target.name.toLowerCase().replace(/controller$/g, "");
     }
 
-    controller(path)(target);
+    controller(path, ...middleware)(target);
 };
 
-const decoratorFactory = (path: string, verb: HTTPVerbs) => (
-    target: Object,
-    propertyKey: string,
-    value: any
-) => {
+const decoratorFactory = (
+    path: string,
+    verb: HTTPVerbs,
+    ...middleware: interfaces.Middleware[]
+) => (target: Object, propertyKey: string, value: any) => {
     switch (verb) {
         case "get":
-            httpGet(path)(target, propertyKey, value);
+            httpGet(path, ...middleware)(target, propertyKey, value);
             break;
         case "post":
-            httpPost(path)(target, propertyKey, value);
+            httpPost(path, ...middleware)(target, propertyKey, value);
             break;
         case "delete":
-            httpDelete(path)(target, propertyKey, value);
+            httpDelete(path, ...middleware)(target, propertyKey, value);
             break;
         case "put":
-            httpPut(path)(target, propertyKey, value);
+            httpPut(path, ...middleware)(target, propertyKey, value);
             break;
         case "patch":
-            httpPatch(path)(target, propertyKey, value);
+            httpPatch(path, ...middleware)(target, propertyKey, value);
     }
 };
 
-export const Get = (path: string) => (
+export const Get = (path: string, ...middleware: interfaces.Middleware[]) => (
     target: Object,
     propertyKey: string,
     value: any
-) => decoratorFactory(path, "get")(target, propertyKey, value);
-export const Post = (path: string) => (
+) => decoratorFactory(path, "get", ...middleware)(target, propertyKey, value);
+export const Post = (path: string, ...middleware: interfaces.Middleware[]) => (
     target: Object,
     propertyKey: string,
     value: any
-) => decoratorFactory(path, "post")(target, propertyKey, value);
-export const Put = (path: string) => (
+) => decoratorFactory(path, "post", ...middleware)(target, propertyKey, value);
+export const Put = (path: string, ...middleware: interfaces.Middleware[]) => (
     target: Object,
     propertyKey: string,
     value: any
-) => decoratorFactory(path, "put")(target, propertyKey, value);
-export const Delete = (path: string) => (
+) => decoratorFactory(path, "put", ...middleware)(target, propertyKey, value);
+export const Delete = (
+    path: string,
+    ...middleware: interfaces.Middleware[]
+) => (target: Object, propertyKey: string, value: any) =>
+    decoratorFactory(path, "delete", ...middleware)(target, propertyKey, value);
+export const Patch = (path: string, ...middleware: interfaces.Middleware[]) => (
     target: Object,
     propertyKey: string,
     value: any
-) => decoratorFactory(path, "delete")(target, propertyKey, value);
-export const Patch = (path: string) => (
-    target: Object,
-    propertyKey: string,
-    value: any
-) => decoratorFactory(path, "patch")(target, propertyKey, value);
+) => decoratorFactory(path, "patch", ...middleware)(target, propertyKey, value);

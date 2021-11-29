@@ -13,6 +13,7 @@ import dayjs from "dayjs";
 import customParse from "dayjs/plugin/customParseFormat";
 import ScheduleRuleItem from "./entities/ScheduleRuleItem";
 import ScheduleRule from "./entities/ScheduleRule";
+import Authentication from "./entities/Authentication";
 dayjs.extend(customParse);
 
 (async function() {
@@ -55,6 +56,15 @@ dayjs.extend(customParse);
 
     // Seed data
 
+    // Add admin account
+    const adminAcc = new Authentication({
+        username: "admin",
+        password: "password",
+        role: "admin"
+    });
+
+    em.persist(adminAcc);
+
     // Store & Store Hours
     const store = new Store("My Store");
     em.persist(store);
@@ -72,9 +82,12 @@ dayjs.extend(customParse);
     em.persist(storeHours);
 
     // Job Title
-    const jobTitles = ["Stock", "Sales", "Cashier", "Manager"].map(
-        item => new JobTitle(item)
-    );
+    const jobTitles = [
+        ["Stock", "#3788D8"],
+        ["Sales", "#96009c"],
+        ["Cashier", "#039c00"],
+        ["Manager", "#b32100"]
+    ].map(item => new JobTitle(item[0], item[1]));
     em.persist(jobTitles);
 
     // Person & Availability
@@ -103,8 +116,20 @@ dayjs.extend(customParse);
         const person = new Person({
             ...samplePerson,
             maxWeeklyHours: 0,
-            jobTitle
+            jobTitle,
+            role: Math.random() > 0.5 ? "FT" : "PT"
         });
+
+        const auth = new Authentication({
+            username: `${samplePerson.firstName.charAt(
+                0
+            )}${samplePerson.lastName.replace(/[\W_]/g, "")}`.toLowerCase(),
+            password: "password",
+            role: "user",
+            person
+        });
+
+        em.persist(auth);
 
         const availabilities: Availability[] = [];
 
@@ -122,8 +147,8 @@ dayjs.extend(customParse);
         } else {
             let skipped = 0;
             for (let hour of storeHours) {
-                // Picks random days to have availability (~50/50)
-                if (Math.random() > 0.5 && skipped < 4) {
+                // Picks random days to have availability (~60/40)
+                if (Math.random() > 0.4 && skipped < 3) {
                     skipped++;
                     continue;
                 }
@@ -148,7 +173,7 @@ dayjs.extend(customParse);
                     "minutes"
                 );
                 let randomEnd = start.add(
-                    Math.min(randomMinute1, randomMinute2),
+                    Math.max(randomMinute1, randomMinute2),
                     "minutes"
                 );
 
@@ -190,6 +215,7 @@ dayjs.extend(customParse);
             person.maxWeeklyHours = randomMaxHour;
         }
         person.availabilities.add(...availabilities);
+        em.persist(availabilities);
         return person;
     });
 
@@ -197,38 +223,47 @@ dayjs.extend(customParse);
 
     // Schedule Rules
     const scheduleRules: Array<ScheduleRule> = [];
+    const scheduleRuleItems: Array<ScheduleRuleItem> = [];
 
-    for (const i of sampleScheduleRules) {
-        scheduleRules.push(
-            new ScheduleRule({
+    for (let day = 1; day <= 5; day++) {
+        for (const i of sampleScheduleRules.weekday) {
+            const rule = new ScheduleRule({
                 day: new DayItem({
                     start: i.day.start,
                     end: i.day.end,
-                    day: i.day.day
+                    day
                 })
-            })
-        );
+            });
+            scheduleRules.push(rule);
+            for (const j of i.rules) {
+                const item = new ScheduleRuleItem({
+                    scheduleRule: rule,
+                    jobTitle: jobTitles.find(x => x.name === j.jobTitle)!,
+                    amount: j.amount
+                });
+                scheduleRuleItems.push(item);
+            }
+        }
     }
 
     em.persist(scheduleRules);
 
-    const scheduleRuleItems: Array<ScheduleRuleItem> = [];
-    for (const i of sampleScheduleRules) {
-        for (const j of i.rules) {
-            scheduleRuleItems.push(
-                new ScheduleRuleItem({
-                    scheduleRule: scheduleRules.find(
-                        x =>
-                            x.day.start === i.day.start &&
-                            x.day.end === i.day.end &&
-                            x.day.day === i.day.day
-                    )!,
-                    jobTitle: jobTitles.find(x => x.name === j.jobTitle)!,
-                    amount: j.amount
-                })
-            );
-        }
-    }
+    // for (const i of sampleScheduleRules) {
+    //     for (const j of i.rules) {
+    //         scheduleRuleItems.push(
+    //             new ScheduleRuleItem({
+    //                 scheduleRule: scheduleRules.find(
+    //                     x =>
+    //                         x.day.start === i.day.start &&
+    //                         x.day.end === i.day.end &&
+    //                         x.day.day === i.day.day
+    //                 )!,
+    //                 jobTitle: jobTitles.find(x => x.name === j.jobTitle)!,
+    //                 amount: j.amount
+    //             })
+    //         );
+    //     }
+    // }
 
     em.persist(scheduleRuleItems);
 

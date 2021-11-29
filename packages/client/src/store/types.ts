@@ -1,5 +1,7 @@
+import { AuthState } from "./modules/auth/types";
 import { JobTitleState } from "./modules/jobTitle/types";
 import { PersonState } from "./modules/person/types";
+import { RequestState } from "./modules/request/types";
 import { ScheduleRuleState } from "./modules/scheduleRule/types";
 import { StoreState } from "./modules/store/types";
 
@@ -38,4 +40,6 @@ export interface RootState {
     store: StoreState;
     jobTitle: JobTitleState;
     scheduleRule: ScheduleRuleState;
+    auth: AuthState;
+    request: RequestState;
 }

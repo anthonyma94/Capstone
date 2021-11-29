@@ -7,13 +7,18 @@ import { ScheduleRule } from "./types";
 
 @Module({ namespaced: true, name: "scheduleRule" })
 export default class ScheduleRuleModule extends BaseModule<ScheduleRule> {
-    data = {} as ScheduleRule[];
+    data = [] as ScheduleRule[];
 
     get [GetterTypes.GET_BY_ID](): (
         id: string
     ) => ComputedRef<ScheduleRule | undefined> {
         return id => computed(() => this.data.find(x => x.id === id));
         // throw new Error("Method not implemented.");
+    }
+
+    get GET_BY_DAY() {
+        return (day: number) =>
+            computed(() => this.data.filter(x => x.day.day === day) || []);
     }
 
     [MutationTypes.REMOVE_DATA](data: ScheduleRule | ScheduleRule[]): void {

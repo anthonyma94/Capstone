@@ -3,6 +3,7 @@
     inputMode="dropdown"
     :placeholder="placeholder"
     :modelValue="selectedItem ? selectedItem.text : ''"
+    v-bind="$attrs"
   >
     <template #dropdown="{hide}">
       <ul class="border-2 rounded-md bg-white w-full">

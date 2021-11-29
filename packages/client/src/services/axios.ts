@@ -5,5 +5,6 @@ export default axios.create({
     proxy: {
         host: "localhost",
         port: 3000
-    }
+    },
+    withCredentials: true
 });

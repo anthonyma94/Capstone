@@ -3,6 +3,7 @@ import { DefaultState } from "@/store/types";
 export interface JobTitle {
     id: string;
     name: string;
+    color: string;
 }
 
 export enum JobTitleActionTypes {

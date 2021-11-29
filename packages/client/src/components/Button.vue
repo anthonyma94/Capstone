@@ -2,10 +2,11 @@
   <button
     class="btn btn-primary"
     v-bind="$attrs"
-    :disabled="disabled"
+    :disabled="disabledState"
     @click="onClick"
   >
-    <slot></slot>
+    <span v-if="loading">{{ loadingText }}</span>
+    <slot v-else></slot>
   </button>
 </template>
 <script setup lang="ts">
@@ -16,10 +17,14 @@ import { useRouter } from "vue-router";
 interface Props extends ButtonHTMLAttributes {
   href?: string;
   disabled?: boolean;
+  loading?: boolean;
+  loadingText?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  disabled: false
+  disabled: false,
+  loading: false,
+  loadingText: "Loading...",
 });
 const emit = defineEmits(["click"]);
 const router = useRouter();
@@ -35,5 +40,6 @@ const onClick = computed(() => {
     }
   };
 });
+const disabledState = computed(() => props.disabled || props.loading);
 </script>
 <style scoped lang="postcss"></style>

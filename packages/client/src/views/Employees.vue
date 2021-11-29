@@ -40,7 +40,6 @@ const persons = computed<any>(() =>
       lastName: item.lastName,
       role: item.role,
       jobTitle: item.jobTitle.name,
-      availability: "",
       maxWeeklyHours: item.maxWeeklyHours
     };
   })

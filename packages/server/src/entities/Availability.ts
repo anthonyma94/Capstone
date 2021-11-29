@@ -1,5 +1,4 @@
 import { ManyToOne, Property } from "@mikro-orm/core";
-import { injectable } from "inversify";
 import { Entity } from "../utils/decorators";
 import BaseEntity from "./BaseEntity";
 import DayItem from "./DayItem";

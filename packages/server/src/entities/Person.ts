@@ -1,11 +1,19 @@
-import { Collection, ManyToOne, OneToMany, Property } from "@mikro-orm/core";
+import {
+    Collection,
+    ManyToOne,
+    OneToMany,
+    OneToOne,
+    Property
+} from "@mikro-orm/core";
 import { inject, injectable } from "inversify";
 import JobTitleService from "../services/JobTitleService";
 import { Entity } from "../utils/decorators";
+import Authentication from "./Authentication";
 import Availability from "./Availability";
 import BaseEntity from "./BaseEntity";
 import { JobTitle } from "./JobTitle";
-import PersonScheduleItem from "./PersonScheduleItem";
+import ScheduleItem from "./ScheduleItem";
+import TimeOff from "./TimeOff";
 
 @Entity()
 @injectable()
@@ -44,16 +52,22 @@ export class Person extends BaseEntity {
     jobTitle!: JobTitle;
 
     @OneToMany(
+        () => TimeOff,
+        time => time.person
+    )
+    timeOffs = new Collection<TimeOff>(this);
+
+    @OneToMany(
         () => Availability,
         availability => availability.person
     )
     availabilities = new Collection<Availability>(this);
 
     @OneToMany(
-        () => PersonScheduleItem,
+        () => ScheduleItem,
         x => x.person
     )
-    scheduleItems = new Collection<PersonScheduleItem>(this);
+    scheduleItems = new Collection<ScheduleItem>(this);
 
     constructor(
         params: {
