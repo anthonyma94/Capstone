@@ -5,7 +5,7 @@ import {
     LoadingTypes,
     MutationTypes
 } from "@/store/types";
-import { computed, ComputedRef } from "vue-demi";
+import { computed } from "vue-demi";
 import { Action, Module } from "vuex-module-decorators";
 import BaseModule, { updateServer } from "../BaseModule";
 import { JobTitle, JobTitleActionTypes, JobTitleGetterTypes } from "./types";
@@ -17,20 +17,7 @@ export default class JobTitleModule extends BaseModule<JobTitle> {
         return (id: string) => computed(() => this.data.find(x => x.id === id));
     }
 
-    get [JobTitleGetterTypes.GET_ALL_WITH_PEOPLE_AMOUNT]() {
-        return this.data.map(item => {
-            return {
-                ...item,
-                numOfEmps: this.context.rootState.person.data.filter(
-                    person => person.jobTitle.id === item.id
-                ).length
-            };
-        });
-    }
-
-    [MutationTypes.REMOVE_DATA](data: JobTitle | JobTitle[]): void {
-        throw new Error("Method not implemented.");
-    }
+    [MutationTypes.REMOVE_DATA](data: JobTitle | JobTitle[]): void {}
 
     @Action
     async [ActionTypes.INITIALIZE_DATA]() {
@@ -40,7 +27,14 @@ export default class JobTitleModule extends BaseModule<JobTitle> {
         this.context.commit(MutationTypes.SET_STATUS, LoadingTypes.SUCCESS);
     }
 
-    async [JobTitleActionTypes.ADD_TITLE](payload: string) {}
+    @Action
+    async [JobTitleActionTypes.ADD_TITLE](title: string) {
+        await updateServer(this.context.commit, async () => {
+            const res = await axios.post("/jobtitle", { name: title });
+
+            this.data.push(res.data);
+        });
+    }
 
     async [ActionTypes.UPDATE_DATA](payload?: any) {
         await updateServer(this.context.commit, async () => {
@@ -48,21 +42,13 @@ export default class JobTitleModule extends BaseModule<JobTitle> {
             this.context.commit(MutationTypes.SET_DATA, res.data);
         });
     }
-    [ActionTypes.DELETE_DATA](payload: any) {
-        throw new Error("Method not implemented.");
-    }
 
-    // [ActionTypes.INITIALIZE_DATA]: async ({ commit }) =>
-    //     await updateServer(commit, { method: "get", url: "/jobtitle" }),
-    // [ActionTypes.DELETE_DATA]: async ({ commit }, id: string) =>
-    //     await updateServer(commit, {
-    //         method: "DELETE",
-    //         url: `/jobtitle/${id}`
-    //     }),
-    // [JobTitleActionTypes.ADD_TITLE]: async ({ commit }, payload: string) =>
-    //     await updateServer(commit, {
-    //         method: "post",
-    //         url: "/jobtitle",
-    //         data: { name: payload }
-    //     })
+    @Action
+    async [ActionTypes.DELETE_DATA](id: string) {
+        await updateServer(this.context.commit, async () => {
+            await axios.delete(`/jobtitle/${id}`);
+            const data = this.data.filter(x => x.id !== id);
+            this.context.commit(MutationTypes.SET_DATA, data);
+        });
+    }
 }

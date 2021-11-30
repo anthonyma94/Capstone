@@ -22,7 +22,7 @@ export default class StoreModule extends BaseModule<Store> {
     }
 
     get [StoreGetterTypes.GET_STORE_HOURS]() {
-        return this.data.storeHours;
+        return computed(() => this.data.storeHours);
     }
 
     get [StoreGetterTypes.GET_SCHEDULE]() {
@@ -219,12 +219,16 @@ export default class StoreModule extends BaseModule<Store> {
     @Action
     async [StoreActionTypes.CHANGE_HOURS](payload: {
         id: string;
-        data: { id?: string; start: string; end: string }[];
+        data: { id?: string; start: Dayjs; end: Dayjs }[];
     }) {
-        await updateServer(this.context.commit, {
-            method: "PUT",
-            url: `/store/changehours/${payload.id}`,
-            data: payload.data
+        await updateServer(this.context.commit, async () => {
+            const res = await axios.put(
+                `/store/changehours/${payload.id}`,
+                payload.data
+            );
+            console.log(res.data);
+
+            this.data.storeHours = res.data;
         });
     }
 }

@@ -4,6 +4,7 @@ import { computed, ComputedRef } from "vue-demi";
 import { Action, Module } from "vuex-module-decorators";
 import BaseModule, { updateServer } from "../BaseModule";
 import { ScheduleRule } from "./types";
+import { Dayjs } from "dayjs";
 
 @Module({ namespaced: true, name: "scheduleRule" })
 export default class ScheduleRuleModule extends BaseModule<ScheduleRule> {
@@ -32,11 +33,22 @@ export default class ScheduleRuleModule extends BaseModule<ScheduleRule> {
         });
     }
 
-    [ActionTypes.UPDATE_DATA](payload?: any) {
-        throw new Error("Method not implemented.");
+    @Action
+    async ADD_SCHEDULE_RULE(params: {
+        type: "recurring";
+        days: number[];
+        start: Date;
+        end: Date;
+        employees: { jobId: string; amount: number }[];
+    }) {
+        await updateServer(this.context.commit, async () => {
+            const res = await axios.post("/schedule/rules", params);
+
+            this.data.push(res.data);
+        });
     }
 
-    [ActionTypes.DELETE_DATA](payload: any) {
-        throw new Error("Method not implemented.");
-    }
+    [ActionTypes.UPDATE_DATA](payload?: any) {}
+
+    [ActionTypes.DELETE_DATA](payload: any) {}
 }

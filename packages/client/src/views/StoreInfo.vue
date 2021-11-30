@@ -28,7 +28,7 @@
       <div>
         <div class="flex justify-around">
           <h1>Store Hours</h1>
-          <Button v-if="authModule.IS_ADMIN">
+          <Button v-if="authModule.IS_ADMIN" @click="handleHourChange">
             Save
           </Button>
         </div>
@@ -44,19 +44,33 @@
             <tr v-for="(day, index) in dayNames" :key="day">
               <th>{{ day }}</th>
               <td>
-                <Input
+                <!-- <Input
                   placeholder="9:00"
                   :show-label="false"
                   v-model="storeHours[index].start"
                   :disabled="!authModule.IS_ADMIN"
+                /> -->
+                <Calendar
+                  v-model="storeHours[index].start"
+                  :timeOnly="true"
+                  placeholder="09:00 AM"
+                  hourFormat="12"
+                  :manual-input="true"
                 />
               </td>
               <td>
-                <Input
+                <!-- <Input
                   placeholder="18:00"
                   :show-label="false"
                   v-model="storeHours[index].end"
                   :disabled="!authModule.IS_ADMIN"
+                /> -->
+                <Calendar
+                  v-model="storeHours[index].end"
+                  :timeOnly="true"
+                  placeholder="08:00 PM"
+                  hourFormat="12"
+                  :manual-input="true"
                 />
               </td>
             </tr>
@@ -67,89 +81,85 @@
     <div v-if="authModule.IS_ADMIN">
       <hr />
       <h1>Shift Scheduling Rules</h1>
-      <Button @click="toggles.addShiftSchedule = !toggles.addShiftSchedule">
-        Add
-      </Button>
       <AddShiftSchedulingModal v-model:visible="toggles.addShiftSchedule" />
       <DataTable
         v-if="scheduleRuleData && scheduleRuleData.length > 0"
         v-model="scheduleRuleData"
         :cols="scheduleRuleTitleCols"
         :editable="false"
-      />
+      >
+        <template #toolbar>
+          <Toolbar class="w-full mr-4">
+            <template #left>
+              <Button
+                @click="toggles.addShiftSchedule = !toggles.addShiftSchedule"
+              >
+                Add
+              </Button>
+            </template>
+          </Toolbar>
+        </template>
+      </DataTable>
       <hr />
       <h1>Job Titles</h1>
-      <div class="flex justify-around my-3">
-        <div class="flex gap-2">
-          <Button @click="toggles.addJob = true">
-            <i class="pi pi-plus-circle pr-3"></i>
-            <span>Add</span>
-          </Button>
-        </div>
-        <div>
-          <div class="flex gap-2" :class="{ 'opacity-0': !selectedJobTitles }">
-            <Button class="btn-danger" @click="onDelete">
-              <i class="pi pi-trash pr-3"></i>
-              <span>Delete</span>
-            </Button>
-          </div>
-        </div>
-      </div>
-      <div
-        v-if="toggles.addJob"
-        class="flex justify-start max-w-xs gap-3 mx-auto mb-3"
-      >
-        <Input
-          v-model="newJobTitle"
-          placeholder="New Job Title"
-          :invalid="v$.newJobTitle.$error"
-          error-text="Please enter a job title."
-        />
-        <Button
-          @click="
-            () => {
-              jobModule.ADD_TITLE(newJobTitle);
-              newJobTitle = '';
-              v$.newJobTitle.$reset();
-            }
-          "
-          :disabled="v$.newJobTitle.$invalid"
-        >
-          Save
-        </Button>
-        <Button
-          class="btn-danger"
-          @click="
-            () => {
-              toggles.addJob = false;
-              newJobTitle = '';
-              v$.newJobTitle.$reset();
-            }
-          "
-        >
-          Cancel
-        </Button>
-      </div>
       <DataTable
-        v-if="
-          jobModule.GET_ALL_WITH_PEOPLE_AMOUNT &&
-            jobModule.GET_ALL_WITH_PEOPLE_AMOUNT.length > 0
-        "
-        v-model="jobModule.GET_ALL_WITH_PEOPLE_AMOUNT"
+        v-if="computedJobTitle.length > 0"
+        v-model="computedJobTitle"
         :cols="titleCols"
         :editable="false"
-      />
+      >
+        <template #toolbar>
+          <Toolbar class="w-full mr-4">
+            <template #left>
+              <div class="flex gap-3">
+                <Button
+                  @click="toggles.addJob = !toggles.addJob"
+                  :class="{ 'btn-outline-danger': toggles.addJob }"
+                >
+                  {{ toggles.addJob ? "Cancel" : "Add" }}
+                </Button>
+                <div class="flex flex-col">
+                  <InputText
+                    v-model="newJobTitle"
+                    v-if="toggles.addJob"
+                    placeholder="New Job Title"
+                    :class="{ 'p-invalid': v$.newJobTitle.$error }"
+                  />
+                  <span
+                    class="text-danger text-sm"
+                    v-if="v$.newJobTitle.$error && toggles.addJob"
+                    >{{ v$.newJobTitle.$errors[0].$message || "" }}</span
+                  >
+                </div>
+                <Button
+                  v-if="toggles.addJob"
+                  @click="
+                    () => {
+                      jobModule.ADD_TITLE(newJobTitle);
+                      newJobTitle = '';
+                      v$.newJobTitle.$reset();
+                    }
+                  "
+                  :disabled="v$.newJobTitle.$invalid"
+                >
+                  Save
+                </Button>
+              </div>
+            </template>
+          </Toolbar>
+        </template>
+      </DataTable>
     </div>
   </div>
 </template>
 <script setup lang="ts">
 // Prop and prop interface
 
-import { computed, ref, watchEffect } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import Input from "@/components/inputs/Input.vue";
 import Button from "@/components/Button.vue";
 import DataTable from "@/components/DataTable.vue";
-import { required } from "@vuelidate/validators";
+import { helpers, required } from "@vuelidate/validators";
 import useVuelidate from "@vuelidate/core";
 import { getModule } from "vuex-module-decorators";
 import StoreModule from "@/store/modules/store";
@@ -160,6 +170,10 @@ import AddShiftSchedulingModal from "@/components/dialogs/AddShiftSchedulingModa
 import dayjs from "dayjs";
 import AuthModule from "@/store/modules/auth";
 import { convertTo12Hour, localecompareDaynames } from "@/services/dates";
+import Calendar from "primevue/calendar";
+import PersonModule from "@/store/modules/person";
+import Toolbar from "primevue/toolbar";
+import InputText from "primevue/inputtext";
 
 // Use hooks
 
@@ -167,16 +181,17 @@ const storeModule = getModule(StoreModule, useStore());
 const jobModule = getModule(JobTitleModule, useStore());
 const scheduleRuleModule = getModule(ScheduleRuleModule, useStore());
 const authModule = getModule(AuthModule, useStore());
+const personModule = getModule(PersonModule, useStore());
 
 // Data
 const storeName = ref("");
 const newJobTitle = ref("");
 const selectedJobTitles = ref();
-const storeHours = ref<{ start: string; end: string; id?: string }[]>(
+const storeHours = ref<{ start?: Date; end?: Date; id?: string }[]>(
   [...Array(7).keys()].map(_ => {
     return {
-      start: "",
-      end: ""
+      start: undefined,
+      end: undefined
     };
   })
 );
@@ -186,9 +201,18 @@ const toggles = ref({
   addShiftSchedule: false
 });
 
+const unique = (value: any) => {
+  return !jobModule.GET_ALL.value
+    .map(x => x.name.toLowerCase().trim())
+    .includes(value.toLowerCase().trim());
+};
+
 const rules = {
   storeName: { required },
-  newJobTitle: { required }
+  newJobTitle: {
+    required: helpers.withMessage("This field is required.", required),
+    unique: helpers.withMessage("Job title must be unique.", unique)
+  }
 };
 const v$ = useVuelidate(
   rules,
@@ -266,7 +290,75 @@ const scheduleRuleData = computed(() => {
   return [];
 });
 
+const computedJobTitle = computed<
+  {
+    numOfEmps: number;
+    id: string;
+    name: string;
+    color: string;
+  }[]
+>({
+  get() {
+    return (
+      jobModule.GET_ALL.value.map(item => {
+        return {
+          ...item,
+          numOfEmps: personModule.GET_ALL.value.filter(
+            person => person.jobTitle.id === item.id
+          ).length
+        };
+      }) || []
+    );
+  },
+  async set(newValue) {
+    console.log(newValue);
+
+    const itemsDeleted = jobModule.GET_ALL.value.filter(
+      x => !newValue.map(x => x.id).includes(x.id)
+    );
+
+    for (const item of itemsDeleted) {
+      await jobModule.DELETE_DATA(item.id);
+    }
+  }
+});
+
 // Methods
+
+const handleHourChange = async () => {
+  const data = storeHours.value
+    .filter(item => {
+      const start = dayjs(item.start);
+      const end = dayjs(item.end);
+      const dayItemConvert = {
+        day: start.day(),
+        start: start.format("HH:mm"),
+        end: end.format("HH:mm")
+      };
+
+      if (item.id) {
+        const itemToCompare = storeModule.GET_STORE_HOURS.value.find(
+          x => x.id === item.id
+        )!;
+
+        const res =
+          itemToCompare.day.day === dayItemConvert.day &&
+          itemToCompare.day.start === dayItemConvert.start &&
+          itemToCompare.day.end === dayItemConvert.end;
+
+        return !res;
+      } else return true;
+    })
+    .map(item => {
+      return {
+        id: item.id,
+        start: dayjs(item.start),
+        end: dayjs(item.end)
+      };
+    });
+  console.log(data);
+  await storeModule.CHANGE_HOURS({ id: storeModule.GET_ALL.value.id, data });
+};
 
 const onDelete = () => {
   const ids = selectedJobTitles.value.map((i: any) => i.id);
@@ -275,25 +367,48 @@ const onDelete = () => {
   });
 };
 
-// Watchers
-// Sets store name and hours if vuex state changes
-watchEffect(() => {
-  const store = storeModule.GET_ALL.value;
-  if (Object.keys(store).length > 0) {
-    storeName.value = store.name;
-    const hours = storeHours.value.map((item, index) => {
-      const hour = store.storeHours.find(item => item.day.day === index);
-      if (hour) {
-        return {
-          start: hour.day.start,
-          end: hour.day.end,
-          id: hour.day.id
+const initStoreHours = () => {
+  const hours = storeModule.GET_STORE_HOURS.value
+    ?.sort((x, y) => x.day.day! - y.day.day!)
+    .map((item, index) => {
+      let hour;
+      // If store hour for the weekday exists
+      if (item.day.day === index) {
+        hour = {
+          start: dayjs(item.day.start, "HH:mm")
+            .day(item.day.day)
+            .toDate(),
+          end: dayjs(item.day.end, "HH:mm")
+            .day(item.day.day)
+            .toDate(),
+          id: item.id
+        };
+      } else {
+        hour = {
+          start: undefined,
+          end: undefined,
+          id: undefined
         };
       }
-      return item;
+      return hour;
     });
+
+  if (hours) {
     storeHours.value = hours;
   }
+};
+
+const initStoreName = () => {
+  storeName.value = storeModule.GET_ALL.value.name;
+};
+
+// Watchers
+watch(() => storeModule.GET_STORE_HOURS.value, initStoreHours);
+watch(() => storeModule.GET_ALL.value.name, initStoreName);
+
+onMounted(() => {
+  initStoreHours();
+  initStoreName();
 });
 </script>
 <style scoped lang="postcss"></style>

@@ -86,4 +86,18 @@ export default class ScheduleController extends BaseHttpController {
 
         await this.service.setDefaultSchedule(dayjs(date));
     }
+
+    @Post("/rules", AuthMiddleware)
+    public async addScheduleRule(req: Request) {
+        const data = req.body;
+
+        if (data.type === "recurring") {
+            data.start = dayjs(data.start);
+            data.end = dayjs(data.end);
+        }
+
+        const res = await this.service.addScheduleRule(data);
+
+        return this.json(res);
+    }
 }

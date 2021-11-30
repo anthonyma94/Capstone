@@ -1,5 +1,4 @@
 import { EntityRepository } from "@mikro-orm/core";
-import { time } from "console";
 import dayjs, { Dayjs } from "dayjs";
 import { provide } from "inversify-binding-decorators";
 import DayItem from "../entities/DayItem";
@@ -7,7 +6,6 @@ import { Person } from "../entities/Person";
 import Schedule from "../entities/Schedule";
 import ScheduleItem from "../entities/ScheduleItem";
 import ScheduleRule from "../entities/ScheduleRule";
-import TimeOff from "../entities/TimeOff";
 import { InjectRepo } from "./decorators";
 
 @provide(Scheduler)
@@ -18,8 +16,7 @@ export default class Scheduler {
         private scheduleRuleRepo: EntityRepository<ScheduleRule>,
         @InjectRepo(Person) private personRepo: EntityRepository<Person>,
         @InjectRepo(ScheduleItem)
-        private scheduleItemRepo: EntityRepository<ScheduleItem>,
-        @InjectRepo(TimeOff) private timeoffRepo: EntityRepository<TimeOff>
+        private scheduleItemRepo: EntityRepository<ScheduleItem>
     ) {}
 
     public async createSchedule(scheduleStart: Dayjs) {
