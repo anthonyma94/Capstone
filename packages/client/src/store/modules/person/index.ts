@@ -132,8 +132,15 @@ export default class PersonModule extends BaseModule<Person> {
         await updateServer(this.context.commit, async () => {
             const res = await axios.put(`/person/${params.id}`, params);
 
-            const personIndex = this.data.findIndex(x => x.id === params.id);
-            this.data[personIndex] = res.data;
+            if (params.id !== "new") {
+                const personIndex = this.data.findIndex(
+                    x => x.id === params.id
+                );
+                this.data[personIndex] = res.data;
+            } else {
+                this.data.push(res.data);
+            }
+            // console.log(res.data);
         });
     }
 }

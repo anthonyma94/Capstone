@@ -22,3 +22,4 @@ const bindings = new inversify_1.AsyncContainerModule(async (bind) => {
     }
 });
 exports.default = bindings;
+//# sourceMappingURL=inversify.js.map

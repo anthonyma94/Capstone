@@ -15,10 +15,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const dayjs_1 = __importDefault(require("dayjs"));
 const inversify_1 = require("inversify");
-const DayItem_1 = __importDefault(require("../entities/DayItem"));
 const Store_1 = __importDefault(require("../entities/Store"));
-const StoreHour_1 = __importDefault(require("../entities/StoreHour"));
+const AuthMiddleware_1 = __importDefault(require("../middleware/AuthMiddleware"));
 const DayItemService_1 = __importDefault(require("../services/DayItemService"));
 const StoreHourService_1 = __importDefault(require("../services/StoreHourService"));
 const StoreService_1 = require("../services/StoreService");
@@ -55,43 +55,18 @@ let StoreController = class StoreController extends BaseController_1.BaseControl
         const result = await this.service.update(store);
         return this.json(result);
     }
-    async changeHours(req, res, next) {
-        if (!req.params.id)
-            throw new Error("Please provide ID.");
-        const store = await this.service.getOne(req.params.id);
-        if (!store)
-            throw new Error("No store found with given ID.");
-        const body = req.body;
-        if (!body)
-            throw new Error("No body found.");
-        for (let i = 0; i < body.length; i++) {
-            const item = body[i];
-            if (!item.id) {
-                if (item.start && item.end) {
-                    const newDay = new DayItem_1.default({
-                        start: item.start,
-                        end: item.end,
-                        day: i
-                    });
-                    const newStoreHour = new StoreHour_1.default(store, newDay);
-                    await this.storeHourService.add(newStoreHour);
-                }
-            }
-            else {
-                const storeHour = await this.storeHourService.getOne(item.id);
-                if (!storeHour)
-                    throw new Error();
-                const day = storeHour.day;
-                if (!item.start || !item.end) {
-                    await this.storeHourService.delete(storeHour);
-                }
-                else {
-                    day.start = item.start;
-                    day.end = item.end;
-                }
-            }
-        }
-        return store;
+    async changeHours(req) {
+        const data = req.body.map((item) => {
+            return {
+                id: item.id,
+                start: (0, dayjs_1.default)(item.start),
+                end: (0, dayjs_1.default)(item.end)
+            };
+        });
+        if (data.some((item) => !item.start.isValid() || !item.end.isValid()))
+            throw new Error("Invalid dates.");
+        const res = await this.service.changeHours(req.params.id, data);
+        return this.json(res);
     }
 };
 __decorate([
@@ -107,9 +82,9 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], StoreController.prototype, "changeName", null);
 __decorate([
-    (0, decorators_1.Put)("/changehours/:id"),
+    (0, decorators_1.Put)("/changehours/:id", AuthMiddleware_1.default),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object, Function]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], StoreController.prototype, "changeHours", null);
 StoreController = __decorate([
@@ -122,3 +97,4 @@ StoreController = __decorate([
         StoreHourService_1.default])
 ], StoreController);
 exports.default = StoreController;
+//# sourceMappingURL=StoreController.js.map

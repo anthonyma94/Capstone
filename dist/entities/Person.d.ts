@@ -1,8 +1,9 @@
 import { Collection } from "@mikro-orm/core";
-import JobTitleService from "../services/JobTitleService";
 import Availability from "./Availability";
 import BaseEntity from "./BaseEntity";
 import { JobTitle } from "./JobTitle";
+import ScheduleItem from "./ScheduleItem";
+import TimeOff from "./TimeOff";
 export declare class Person extends BaseEntity {
     firstName: string;
     lastName: string;
@@ -15,7 +16,9 @@ export declare class Person extends BaseEntity {
     phone: string;
     maxWeeklyHours: number;
     jobTitle: JobTitle;
+    timeOffs: Collection<TimeOff, unknown>;
     availabilities: Collection<Availability, unknown>;
+    scheduleItems: Collection<ScheduleItem, unknown>;
     constructor(params: {
         firstName: string;
         lastName: string;
@@ -27,6 +30,6 @@ export declare class Person extends BaseEntity {
         pay: number;
         phone: string;
         maxWeeklyHours: number;
-        jobTitle: string | JobTitle;
-    }, jobTitleService?: JobTitleService);
+        jobTitle: JobTitle;
+    });
 }

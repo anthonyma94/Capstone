@@ -8,6 +8,7 @@ const mikro_orm_config_1 = __importDefault(require("./config/mikro-orm.config"))
 const Store_1 = __importDefault(require("./entities/Store"));
 const sampleStoreHours_1 = __importDefault(require("./assets/samples/sampleStoreHours"));
 const samplePeople_1 = __importDefault(require("./assets/samples/samplePeople"));
+const sampleScheduleRules_1 = __importDefault(require("./assets/samples/sampleScheduleRules"));
 const DayItem_1 = __importDefault(require("./entities/DayItem"));
 const StoreHour_1 = __importDefault(require("./entities/StoreHour"));
 const JobTitle_1 = require("./entities/JobTitle");
@@ -15,6 +16,9 @@ const Person_1 = require("./entities/Person");
 const Availability_1 = __importDefault(require("./entities/Availability"));
 const dayjs_1 = __importDefault(require("dayjs"));
 const customParseFormat_1 = __importDefault(require("dayjs/plugin/customParseFormat"));
+const ScheduleRuleItem_1 = __importDefault(require("./entities/ScheduleRuleItem"));
+const ScheduleRule_1 = __importDefault(require("./entities/ScheduleRule"));
+const Authentication_1 = __importDefault(require("./entities/Authentication"));
 dayjs_1.default.extend(customParseFormat_1.default);
 (async function () {
     const orm = await core_1.MikroORM.init({
@@ -44,6 +48,12 @@ dayjs_1.default.extend(customParseFormat_1.default);
         await migrator.createMigration();
     }
     await migrator.up();
+    const adminAcc = new Authentication_1.default({
+        username: "admin",
+        password: "password",
+        role: "admin"
+    });
+    em.persist(adminAcc);
     const store = new Store_1.default("My Store");
     em.persist(store);
     const storeHours = sampleStoreHours_1.default.map(hour => new StoreHour_1.default(store, new DayItem_1.default({
@@ -52,7 +62,12 @@ dayjs_1.default.extend(customParseFormat_1.default);
         day: hour.day
     })));
     em.persist(storeHours);
-    const jobTitles = ["Stock", "Sales", "Cashier", "Manager"].map(item => new JobTitle_1.JobTitle(item));
+    const jobTitles = [
+        ["Stock", "#3788D8"],
+        ["Sales", "#96009c"],
+        ["Cashier", "#039c00"],
+        ["Manager", "#b32100"]
+    ].map(item => new JobTitle_1.JobTitle(item[0], item[1]));
     em.persist(jobTitles);
     const maxPeople = samplePeople_1.default.length;
     let maxSales = Math.round(maxPeople * 0.5);
@@ -80,8 +95,16 @@ dayjs_1.default.extend(customParseFormat_1.default);
         const person = new Person_1.Person({
             ...samplePerson,
             maxWeeklyHours: 0,
-            jobTitle
+            jobTitle,
+            role: Math.random() > 0.5 ? "FT" : "PT"
         });
+        const auth = new Authentication_1.default({
+            username: `${samplePerson.firstName.charAt(0)}${samplePerson.lastName.replace(/[\W_]/g, "")}`.toLowerCase(),
+            password: "password",
+            role: "user",
+            person
+        });
+        em.persist(auth);
         const availabilities = [];
         if (person.role === "FT") {
             storeHours.forEach(hour => {
@@ -96,7 +119,7 @@ dayjs_1.default.extend(customParseFormat_1.default);
         else {
             let skipped = 0;
             for (let hour of storeHours) {
-                if (Math.random() > 0.5 && skipped < 4) {
+                if (Math.random() > 0.4 && skipped < 3) {
                     skipped++;
                     continue;
                 }
@@ -111,7 +134,7 @@ dayjs_1.default.extend(customParseFormat_1.default);
                 if (randomMinute2 % 30 !== 0)
                     randomMinute2 += 30 - (randomMinute2 % 30);
                 let randomStart = start.add(Math.min(randomMinute1, randomMinute2), "minutes");
-                let randomEnd = start.add(Math.min(randomMinute1, randomMinute2), "minutes");
+                let randomEnd = start.add(Math.max(randomMinute1, randomMinute2), "minutes");
                 if (randomStart < start)
                     randomStart = start;
                 if (randomEnd > end)
@@ -143,9 +166,35 @@ dayjs_1.default.extend(customParseFormat_1.default);
             person.maxWeeklyHours = randomMaxHour;
         }
         person.availabilities.add(...availabilities);
+        em.persist(availabilities);
         return person;
     });
     em.persist(people);
+    const scheduleRules = [];
+    const scheduleRuleItems = [];
+    for (let day = 1; day <= 5; day++) {
+        for (const i of sampleScheduleRules_1.default.weekday) {
+            const rule = new ScheduleRule_1.default({
+                day: new DayItem_1.default({
+                    start: i.day.start,
+                    end: i.day.end,
+                    day
+                })
+            });
+            scheduleRules.push(rule);
+            for (const j of i.rules) {
+                const item = new ScheduleRuleItem_1.default({
+                    scheduleRule: rule,
+                    jobTitle: jobTitles.find(x => x.name === j.jobTitle),
+                    amount: j.amount
+                });
+                scheduleRuleItems.push(item);
+            }
+        }
+    }
+    em.persist(scheduleRules);
+    em.persist(scheduleRuleItems);
     await em.flush();
     process.exit(0);
 })();
+//# sourceMappingURL=seed-database.js.map

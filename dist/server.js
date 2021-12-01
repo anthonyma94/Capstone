@@ -24,18 +24,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
 require("./controllers");
+require("./utils/dayjs");
 const core_1 = require("@mikro-orm/core");
 const express_1 = __importDefault(require("express"));
+const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const inversify_1 = require("inversify");
 const inversify_binding_decorators_1 = require("inversify-binding-decorators");
 const inversify_express_utils_1 = require("inversify-express-utils");
 const types_1 = require("./types");
 const inversify_2 = __importDefault(require("./config/inversify"));
 const path = __importStar(require("path"));
+const dayjs_1 = __importDefault(require("dayjs"));
+const customParseFormat_1 = __importDefault(require("dayjs/plugin/customParseFormat"));
+const jwt_1 = require("./utils/jwt");
 class Server {
     app;
     server;
     constructor() {
+        dayjs_1.default.extend(customParseFormat_1.default);
         this.initContainer()
             .then(container => {
             this.server = new inversify_express_utils_1.InversifyExpressServer(container, null, {
@@ -43,10 +49,12 @@ class Server {
             });
             this.server.setConfig(app => {
                 app.use(express_1.default.json());
+                app.use((0, cookie_parser_1.default)());
                 app.use((req, res, next) => {
                     const connection = container.get(types_1.DI_TYPES.DATABASE_CONNECTION);
                     core_1.RequestContext.create(connection.em, next);
                 });
+                app.use(jwt_1.authenticateToken);
                 if (process.env.NODE_ENV === "production") {
                     console.log("App is in production.");
                     app.use(express_1.default.static(path.resolve(__dirname, "public")));
@@ -67,3 +75,4 @@ class Server {
     };
 }
 exports.default = Server;
+//# sourceMappingURL=server.js.map

@@ -37,3 +37,4 @@ class TimeType extends core_1.Type {
     }
 }
 exports.TimeType = TimeType;
+//# sourceMappingURL=mikro-orm.config.js.map

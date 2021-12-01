@@ -50,3 +50,4 @@ BaseService = __decorate([
     __metadata("design:paramtypes", [Object])
 ], BaseService);
 exports.BaseService = BaseService;
+//# sourceMappingURL=BaseService.js.map

@@ -10,5 +10,5 @@ export default class StoreController extends BaseController<StoreService, Store>
     constructor(service: StoreService, dayItemService: DayItemService, storeHourService: StoreHourService);
     add(req: Request, res: Response, next: NextFunction): Promise<import("inversify-express-utils/dts/results").JsonResult>;
     changeName(req: Request, res: Response, next: NextFunction): Promise<import("inversify-express-utils/dts/results").JsonResult>;
-    changeHours(req: Request, res: Response, next: NextFunction): Promise<Store>;
+    changeHours(req: Request): Promise<import("inversify-express-utils/dts/results").JsonResult>;
 }

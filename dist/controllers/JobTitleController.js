@@ -28,7 +28,9 @@ let JobTitleController = class JobTitleController extends BaseController_1.BaseC
         if (!req.body || !req.body.name) {
             throw new Error("Store must have a name.");
         }
-        const title = new JobTitle_1.JobTitle(req.body.name);
+        const n = (Math.random() * 0xfffff * 1000000).toString(16);
+        const color = "#" + n.slice(0, 6);
+        const title = new JobTitle_1.JobTitle(req.body.name, color);
         const result = await this.service.add(title);
         return this.json(result, 201);
     }
@@ -45,3 +47,4 @@ JobTitleController = __decorate([
     __metadata("design:paramtypes", [Object])
 ], JobTitleController);
 exports.default = JobTitleController;
+//# sourceMappingURL=JobTitleController.js.map

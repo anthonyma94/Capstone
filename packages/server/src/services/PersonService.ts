@@ -13,13 +13,16 @@ import { BaseService } from "./BaseService";
 import util from "util";
 import DayItem from "../entities/DayItem";
 import { Dayjs } from "dayjs";
+import Authentication from "../entities/Authentication";
 
 @provide(PersonService)
 export default class PersonService extends BaseService<Person> {
     constructor(
         @InjectRepo(Person) repo: any,
         @InjectRepo(Availability)
-        private availabilityRepo: EntityRepository<Availability>
+        private availabilityRepo: EntityRepository<Availability>,
+        @InjectRepo(Authentication)
+        private authRepo: EntityRepository<Authentication>
     ) {
         super(repo);
     }
@@ -133,20 +136,52 @@ export default class PersonService extends BaseService<Person> {
         city: string;
         phone: string;
     }) => {
-        const item = await this.repo.findOneOrFail({ id: params.id });
+        if (params.id !== "new") {
+            const item = await this.repo.findOneOrFail({ id: params.id });
 
-        item.firstName = params.firstName;
-        item.lastName = params.lastName;
-        item.address = params.address;
-        item.province = params.province;
-        item.postal = params.postal;
-        item.city = params.city;
-        item.phone = params.phone;
-        item.pay = params.pay;
-        item.maxWeeklyHours = params.maxWeeklyHours;
-        item.jobTitle = params.jobTitle as any;
-        item.role = params.role;
+            item.firstName = params.firstName;
+            item.lastName = params.lastName;
+            item.address = params.address;
+            item.province = params.province;
+            item.postal = params.postal;
+            item.city = params.city;
+            item.phone = params.phone;
+            item.pay = params.pay;
+            item.maxWeeklyHours = params.maxWeeklyHours;
+            item.jobTitle = params.jobTitle as any;
+            item.role = params.role;
+        } else {
+            const item = new Person({
+                firstName:
+                    params.firstName.charAt(0).toUpperCase() +
+                    params.firstName.slice(1).toLowerCase(),
+                lastName:
+                    params.lastName.charAt(0).toUpperCase() +
+                    params.lastName.slice(1).toLowerCase(),
+                address: params.address,
+                province: params.province,
+                city: params.city,
+                postal: params.postal,
+                role: params.role,
+                pay: params.pay,
+                phone: params.phone,
+                maxWeeklyHours: params.maxWeeklyHours,
+                jobTitle: params.jobTitle as any
+            });
 
+            const auth = new Authentication({
+                person: item,
+                username:
+                    item.firstName.charAt(0).toLowerCase() +
+                    item.lastName.toLowerCase(),
+                password: "password",
+                role: "user"
+            });
+
+            this.repo.persist(item);
+            await this.authRepo.persistAndFlush(auth);
+            params.id = item.id;
+        }
         await this.repo.flush();
 
         const res = await this.repo.findOneOrFail({ id: params.id }, [

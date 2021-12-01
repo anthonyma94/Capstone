@@ -91,12 +91,16 @@
     </form>
     <hr />
     <h1>Availability</h1>
+    <h3 v-if="isNewPerson">
+      Availability can be added once a new employee is created.
+    </h3>
     <DataTable
       key="id"
       :cols="availabilityCols"
       v-model="computedAvailabilities"
       :editable="authModule.IS_ADMIN"
       :deletable="authModule.IS_ADMIN"
+      v-else
     >
       <template #toolbar>
         <Toolbar class="w-full mr-6">
@@ -120,7 +124,7 @@ import Input from "@/components/inputs/Input.vue";
 import DataTable from "@/components/DataTable.vue";
 import Select from "@/components/inputs/Select.vue";
 import dayNames from "@/assets/dayNames";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { computed, onMounted, watch } from "@vue/runtime-core";
 import { ref } from "vue";
 import { helpers, required } from "@vuelidate/validators";
@@ -149,6 +153,7 @@ const store = useStore();
 const personModule = getModule(PersonModule, store);
 const jobModule = getModule(JobTitleModule, store);
 const authModule = getModule(AuthModule, store);
+const router = useRouter();
 const route = useRoute();
 
 // Data
@@ -231,6 +236,7 @@ const showAddAvailability = ref(false);
 const v$ = useVuelidate(rules, data, { $autoDirty: true });
 
 // Computed
+const isNewPerson = computed(() => route.params.id === "new");
 const computedAvailabilities = computed({
   get: () =>
     data.value.availabilities.map(i => {
@@ -305,12 +311,40 @@ const onSaveClick = async () => {
     pay: parseFloat(data.value.pay),
     maxWeeklyHours: parseFloat(data.value.maxWeeklyHours)
   };
+  if (!res.id) {
+    res.id = route.params.id as string;
+  }
   delete res.availabilities;
 
   await personModule.EDIT_PERSON(res);
-  loadingAddPerson.value = false;
 
   toast.add({ severity: "info", summary: "Employee updated.", life: 3000 });
+
+  console.log(res);
+
+  if (isNewPerson.value) {
+    let newPerson;
+    // for (let i = 0; i < 100; i++) {
+    const person = personModule.GET_ALL.value.find(
+      x =>
+        x.firstName === res.firstName &&
+        x.lastName === res.lastName &&
+        x.phone === res.phone
+    );
+    if (person) {
+      newPerson = person;
+      // break;
+    }
+    // }
+
+    if (newPerson) {
+      const id = newPerson.id;
+      window.location.href = `/employees/${id}`;
+    } else {
+      console.log("No new person found.");
+    }
+  }
+  loadingAddPerson.value = false;
 };
 
 const initPersonData = () => {
@@ -322,6 +356,13 @@ const initPersonData = () => {
       maxWeeklyHours: person.value.maxWeeklyHours.toString() || "",
       jobTitle: person.value.jobTitle.id
     };
+  } else {
+    toast.add({
+      severity: "error",
+      summary: "No person found.",
+      detail: `No person found with the given ID ${route.params
+        .id as string}. If this is an error, please contact your administrator.`
+    });
   }
 };
 
@@ -338,7 +379,26 @@ watch(
 );
 
 onMounted(() => {
-  initPersonData();
+  if (!isNewPerson.value) {
+    initPersonData();
+  }
+  if (isNewPerson.value) {
+    data.value = {
+      id: "",
+      firstName: "test",
+      lastName: "test",
+      address: "8521 Fusce Rd.",
+      city: "Mount Pearl",
+      province: "NB",
+      postal: "A8P 5P8",
+      role: "PT",
+      pay: (17.16).toString(),
+      phone: "5750306830",
+      maxWeeklyHours: (11).toString(),
+      jobTitle: "930b2118-4ece-4bdb-9fa8-489b4c0a71ca",
+      availabilities: []
+    };
+  }
 });
 </script>
 <style scoped lang="postcss"></style>

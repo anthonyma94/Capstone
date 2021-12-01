@@ -1,14 +1,7 @@
-import {
-    Collection,
-    ManyToOne,
-    OneToMany,
-    OneToOne,
-    Property
-} from "@mikro-orm/core";
+import { Collection, ManyToOne, OneToMany, Property } from "@mikro-orm/core";
 import { inject, injectable } from "inversify";
 import JobTitleService from "../services/JobTitleService";
 import { Entity } from "../utils/decorators";
-import Authentication from "./Authentication";
 import Availability from "./Availability";
 import BaseEntity from "./BaseEntity";
 import { JobTitle } from "./JobTitle";
@@ -81,9 +74,9 @@ export class Person extends BaseEntity {
             pay: number;
             phone: string;
             maxWeeklyHours: number;
-            jobTitle: string | JobTitle;
-        },
-        @inject(JobTitleService) jobTitleService?: JobTitleService
+            jobTitle: JobTitle;
+        }
+        // @inject(JobTitleService) jobTitleService?: JobTitleService
     ) {
         super();
         this.firstName = params.firstName;
@@ -96,14 +89,15 @@ export class Person extends BaseEntity {
         this.phone = params.phone;
         this.pay = params.pay;
         this.maxWeeklyHours = params.maxWeeklyHours;
+        this.jobTitle = params.jobTitle;
 
-        if (typeof params.jobTitle === "string") {
-            jobTitleService!.find({ name: params.jobTitle }).then(res => {
-                if (!res) throw new Error("Job Title not found.");
-                this.jobTitle = res;
-            });
-        } else {
-            this.jobTitle = params.jobTitle;
-        }
+        // if (typeof params.jobTitle === "string") {
+        //     jobTitleService!.find({ name: params.jobTitle }).then(res => {
+        //         if (!res) throw new Error("Job Title not found.");
+        //         this.jobTitle = res;
+        //     });
+        // } else {
+        //     this.jobTitle = params.jobTitle;
+        // }
     }
 }

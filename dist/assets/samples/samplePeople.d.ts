@@ -4,9 +4,8 @@ declare const _default: {
     address: string;
     city: string;
     province: string;
-    postal: string;
     phone: string;
-    role: string;
     pay: number;
+    postal: string;
 }[];
 export default _default;

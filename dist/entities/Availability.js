@@ -46,3 +46,4 @@ Availability = __decorate([
     __metadata("design:paramtypes", [Object])
 ], Availability);
 exports.default = Availability;
+//# sourceMappingURL=Availability.js.map

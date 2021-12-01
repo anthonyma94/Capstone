@@ -37,3 +37,4 @@ exports.default = [
         end: "20:00:00"
     }
 ];
+//# sourceMappingURL=sampleStoreHours.js.map

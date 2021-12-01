@@ -21,9 +21,14 @@ const inversify_binding_decorators_1 = require("inversify-binding-decorators");
 const BaseService_1 = require("./BaseService");
 const Store_1 = __importDefault(require("../entities/Store"));
 const decorators_1 = require("../utils/decorators");
+const core_1 = require("@mikro-orm/core");
+const StoreHour_1 = __importDefault(require("../entities/StoreHour"));
+const DayItem_1 = __importDefault(require("../entities/DayItem"));
 let StoreService = StoreService_1 = class StoreService extends BaseService_1.BaseService {
-    constructor(repo) {
+    storeHourRepo;
+    constructor(repo, storeHourRepo) {
         super(repo);
+        this.storeHourRepo = storeHourRepo;
     }
     getAll = async (options) => {
         const res = await this.repo.findAll({
@@ -34,10 +39,33 @@ let StoreService = StoreService_1 = class StoreService extends BaseService_1.Bas
         });
         return res;
     };
+    changeHours = async (storeId, hours) => {
+        for (const hour of hours) {
+            if (!hour.id) {
+                const dayItem = new DayItem_1.default({
+                    start: hour.start.format("HH:mm"),
+                    end: hour.end.format("HH:mm"),
+                    day: hour.start.day()
+                });
+                const item = new StoreHour_1.default(storeId, dayItem);
+                this.storeHourRepo.persist(item);
+            }
+            else {
+                const item = await this.storeHourRepo.findOneOrFail({ id: hour.id }, ["day"]);
+                item.day.start = hour.start.format("HH:mm");
+                item.day.end = hour.end.format("HH:mm");
+            }
+        }
+        await this.storeHourRepo.flush();
+        return await this.storeHourRepo.find({ store: storeId }, ["day"]);
+    };
 };
 StoreService = StoreService_1 = __decorate([
     (0, inversify_binding_decorators_1.provide)(StoreService_1),
     __param(0, (0, decorators_1.InjectRepo)(Store_1.default)),
-    __metadata("design:paramtypes", [Object])
+    __param(1, (0, decorators_1.InjectRepo)(StoreHour_1.default)),
+    __metadata("design:paramtypes", [core_1.EntityRepository,
+        core_1.EntityRepository])
 ], StoreService);
 exports.StoreService = StoreService;
+//# sourceMappingURL=StoreService.js.map

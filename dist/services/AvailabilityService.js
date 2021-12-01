@@ -31,3 +31,4 @@ AvailabilityService = AvailabilityService_1 = __decorate([
     __metadata("design:paramtypes", [Object])
 ], AvailabilityService);
 exports.default = AvailabilityService;
+//# sourceMappingURL=AvailabilityService.js.map

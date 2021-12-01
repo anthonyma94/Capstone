@@ -1,0 +1,1 @@
+{"version":3,"file":"BaseEntity.js","sourceRoot":"","sources":["../../packages/server/src/entities/BaseEntity.ts"],"names":[],"mappings":";;;;;;;;;;;AAAA,0CAAqD;AACrD,+BAA0B;AAE1B,IAA8B,UAAU,GAAxC,MAA8B,UAAU;IAEpC,EAAE,GAAG,IAAA,SAAE,GAAE,CAAC;CACb,CAAA;AADG;IADC,IAAA,iBAAU,GAAE;;sCACH;AAFgB,UAAU;IADvC,IAAA,aAAM,EAAC,EAAE,QAAQ,EAAE,IAAI,EAAE,CAAC;GACG,UAAU,CAGvC;kBAH6B,UAAU"}

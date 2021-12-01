@@ -18,17 +18,24 @@ const decorators_1 = require("../utils/decorators");
 const BaseEntity_1 = __importDefault(require("./BaseEntity"));
 let JobTitle = class JobTitle extends BaseEntity_1.default {
     name;
-    constructor(name) {
+    color;
+    constructor(name, color) {
         super();
         this.name = name;
+        this.color = color;
     }
 };
 __decorate([
     (0, core_1.Property)(),
     __metadata("design:type", String)
 ], JobTitle.prototype, "name", void 0);
+__decorate([
+    (0, core_1.Property)(),
+    __metadata("design:type", String)
+], JobTitle.prototype, "color", void 0);
 JobTitle = __decorate([
     (0, decorators_1.Entity)(),
-    __metadata("design:paramtypes", [String])
+    __metadata("design:paramtypes", [String, String])
 ], JobTitle);
 exports.JobTitle = JobTitle;
+//# sourceMappingURL=JobTitle.js.map

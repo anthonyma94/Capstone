@@ -22,3 +22,4 @@ BaseEntity = __decorate([
     (0, core_1.Entity)({ abstract: true })
 ], BaseEntity);
 exports.default = BaseEntity;
+//# sourceMappingURL=BaseEntity.js.map

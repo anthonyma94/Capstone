@@ -14,3 +14,4 @@ const mapEnumToTypes = (typeEnum) => {
     return typesObject;
 };
 exports.DI_TYPES = mapEnumToTypes(InversifyEnum);
+//# sourceMappingURL=index.js.map

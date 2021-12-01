@@ -23,11 +23,14 @@ const Person_1 = require("../entities/Person");
 const decorators_1 = require("../utils/decorators");
 const BaseService_1 = require("./BaseService");
 const DayItem_1 = __importDefault(require("../entities/DayItem"));
+const Authentication_1 = __importDefault(require("../entities/Authentication"));
 let PersonService = PersonService_1 = class PersonService extends BaseService_1.BaseService {
     availabilityRepo;
-    constructor(repo, availabilityRepo) {
+    authRepo;
+    constructor(repo, availabilityRepo, authRepo) {
         super(repo);
         this.availabilityRepo = availabilityRepo;
+        this.authRepo = authRepo;
     }
     getOne = async (id, options) => {
         const res = await this.repo.findOneOrFail(id, {
@@ -58,43 +61,93 @@ let PersonService = PersonService_1 = class PersonService extends BaseService_1.
         this.repo.flush();
         return res;
     };
-    addAvailabilities = async (id, availabilities) => {
-        try {
-            const person = await this.getOne(id);
-            for (let i of availabilities) {
-                const item = new Availability_1.default({
-                    ...i,
-                    day: new DayItem_1.default(i.day),
-                    person
-                });
-                this.availabilityRepo.persist(item);
-                person.availabilities.add(item);
-            }
-            await this.repo.flush();
-            return person;
+    addAvailabilities = async (params) => {
+        const availabilities = [];
+        for (const i of params.availabilities) {
+            const item = new Availability_1.default({
+                person: params.personId,
+                isApproved: true,
+                day: new DayItem_1.default({
+                    start: i.start,
+                    end: i.end,
+                    day: i.day
+                })
+            });
+            availabilities.push(item);
         }
-        catch (e) {
-            console.error(e);
-            throw e;
+        await this.availabilityRepo.persistAndFlush(availabilities);
+        const res = await this.availabilityRepo.find({ id: { $in: availabilities.map(x => x.id) } }, ["day"]);
+        return res;
+    };
+    deleteAvailability = async (id) => {
+        const items = await this.availabilityRepo.findOneOrFail({ id });
+        await this.availabilityRepo.removeAndFlush(items);
+    };
+    editAvailability = async (params) => {
+        const item = await this.availabilityRepo.findOneOrFail({ id: params.id }, ["day"]);
+        item.day.start = params.start.format("HH:mm");
+        item.day.end = params.end.format("HH:mm");
+        item.day.day = params.day;
+        await this.availabilityRepo.flush();
+        return item;
+    };
+    updatePerson = async (params) => {
+        if (params.id !== "new") {
+            const item = await this.repo.findOneOrFail({ id: params.id });
+            item.firstName = params.firstName;
+            item.lastName = params.lastName;
+            item.address = params.address;
+            item.province = params.province;
+            item.postal = params.postal;
+            item.city = params.city;
+            item.phone = params.phone;
+            item.pay = params.pay;
+            item.maxWeeklyHours = params.maxWeeklyHours;
+            item.jobTitle = params.jobTitle;
+            item.role = params.role;
         }
-    };
-    deleteAvailability = async (availability) => {
-        const item = await this.availabilityRepo.findOneOrFail({
-            id: availability.id
-        });
-        await this.repo.removeAndFlush(item);
-    };
-    updateAvailability = async (availability) => {
-        const person = await this.getOne(availability.person.id);
-        if (!person)
-            throw new Error("No person found with ID.");
-        await this.repo.persistAndFlush(availability);
+        else {
+            const item = new Person_1.Person({
+                firstName: params.firstName.charAt(0).toUpperCase() +
+                    params.firstName.slice(1).toLowerCase(),
+                lastName: params.lastName.charAt(0).toUpperCase() +
+                    params.lastName.slice(1).toLowerCase(),
+                address: params.address,
+                province: params.province,
+                city: params.city,
+                postal: params.postal,
+                role: params.role,
+                pay: params.pay,
+                phone: params.phone,
+                maxWeeklyHours: params.maxWeeklyHours,
+                jobTitle: params.jobTitle
+            });
+            const auth = new Authentication_1.default({
+                person: item,
+                username: item.firstName.charAt(0).toLowerCase() +
+                    item.lastName.toLowerCase(),
+                password: "password",
+                role: "user"
+            });
+            this.repo.persist(item);
+            await this.authRepo.persistAndFlush(auth);
+            params.id = item.id;
+        }
+        await this.repo.flush();
+        const res = await this.repo.findOneOrFail({ id: params.id }, [
+            "availabilities.day",
+            "jobTitle"
+        ]);
+        return res;
     };
 };
 PersonService = PersonService_1 = __decorate([
     (0, inversify_binding_decorators_1.provide)(PersonService_1),
     __param(0, (0, decorators_1.InjectRepo)(Person_1.Person)),
     __param(1, (0, decorators_1.InjectRepo)(Availability_1.default)),
-    __metadata("design:paramtypes", [Object, core_1.EntityRepository])
+    __param(2, (0, decorators_1.InjectRepo)(Authentication_1.default)),
+    __metadata("design:paramtypes", [Object, core_1.EntityRepository,
+        core_1.EntityRepository])
 ], PersonService);
 exports.default = PersonService;
+//# sourceMappingURL=PersonService.js.map

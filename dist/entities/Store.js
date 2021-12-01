@@ -37,3 +37,4 @@ Store = __decorate([
     __metadata("design:paramtypes", [String])
 ], Store);
 exports.default = Store;
+//# sourceMappingURL=Store.js.map

@@ -19,10 +19,6 @@ let BaseController = class BaseController extends inversify_express_utils_1.Base
         super();
         this.service = _service;
     }
-    async get(req, res, next) {
-        const result = await this.service.getAll();
-        return this.json(result);
-    }
     async find(req, res, next) {
         const result = await this.service.getOne(req.params.id);
         return this.json(result);
@@ -34,13 +30,11 @@ let BaseController = class BaseController extends inversify_express_utils_1.Base
         await this.service.delete(item);
         return this.json(item, 200);
     }
+    async get(req, res, next) {
+        const result = await this.service.getAll();
+        return this.json(result);
+    }
 };
-__decorate([
-    (0, decorators_1.Get)("/"),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object, Function]),
-    __metadata("design:returntype", Promise)
-], BaseController.prototype, "get", null);
 __decorate([
     (0, decorators_1.Get)("/:id"),
     __metadata("design:type", Function),
@@ -53,8 +47,15 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object, Function]),
     __metadata("design:returntype", Promise)
 ], BaseController.prototype, "delete", null);
+__decorate([
+    (0, decorators_1.Get)("/"),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object, Function]),
+    __metadata("design:returntype", Promise)
+], BaseController.prototype, "get", null);
 BaseController = __decorate([
     (0, inversify_1.injectable)(),
     __metadata("design:paramtypes", [Object])
 ], BaseController);
 exports.BaseController = BaseController;
+//# sourceMappingURL=BaseController.js.map

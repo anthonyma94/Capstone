@@ -15,7 +15,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const dayjs_1 = __importDefault(require("dayjs"));
 const inversify_1 = require("inversify");
+const AuthMiddleware_1 = __importDefault(require("../middleware/AuthMiddleware"));
 const PersonService_1 = __importDefault(require("../services/PersonService"));
 const decorators_1 = require("../utils/decorators");
 const BaseController_1 = require("./BaseController");
@@ -23,27 +25,27 @@ let PersonController = class PersonController extends BaseController_1.BaseContr
     constructor(service) {
         super(service);
     }
-    async addAvailabilities(req, res, next) {
-        try {
-            const res = await this.service.addAvailabilities(req.params.id, req.body);
-            return this.json(res);
-        }
-        catch (e) {
-            return this.badRequest();
-        }
+    async addAvailabilities(req) {
+        const res = await this.service.addAvailabilities({
+            personId: req.params.id,
+            availabilities: req.body
+        });
+        return this.json(res);
     }
-    async removeAvailabilities(req, res, next) {
-        try {
-            await this.service.deleteAvailability(req.body);
-            return this.statusCode(200);
-        }
-        catch (e) {
-            return this.badRequest(e);
-        }
+    async removeAvailabilities(req) {
+        await this.service.deleteAvailability(req.params.id);
+        return this.statusCode(200);
     }
-    async updatePerson(req, res, next) {
+    async editAvailability(req) {
+        const data = req.body;
+        data.start = (0, dayjs_1.default)(data.start, ["hh:mm A", "HH:mm"]);
+        data.end = (0, dayjs_1.default)(data.end, ["hh:mm A", "HH:mm"]);
+        const res = await this.service.editAvailability(data);
+        return this.json(res);
+    }
+    async updatePerson(req) {
         try {
-            const res = await this.service.update(req.body);
+            const res = await this.service.updatePerson(req.body);
             return this.json(res, 200);
         }
         catch (e) {
@@ -53,21 +55,27 @@ let PersonController = class PersonController extends BaseController_1.BaseContr
     }
 };
 __decorate([
-    (0, decorators_1.Post)("/:id/availability"),
+    (0, decorators_1.Post)("/:id/availability", AuthMiddleware_1.default),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object, Function]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], PersonController.prototype, "addAvailabilities", null);
 __decorate([
-    (0, decorators_1.Delete)("/:id/availability"),
+    (0, decorators_1.Delete)("/:personid/availability/:id", AuthMiddleware_1.default),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object, Function]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], PersonController.prototype, "removeAvailabilities", null);
 __decorate([
-    (0, decorators_1.Put)("/:id"),
+    (0, decorators_1.Put)("/:id/availability", AuthMiddleware_1.default),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object, Function]),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], PersonController.prototype, "editAvailability", null);
+__decorate([
+    (0, decorators_1.Put)("/:id", AuthMiddleware_1.default),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], PersonController.prototype, "updatePerson", null);
 PersonController = __decorate([
@@ -76,3 +84,4 @@ PersonController = __decorate([
     __metadata("design:paramtypes", [Object])
 ], PersonController);
 exports.default = PersonController;
+//# sourceMappingURL=PersonController.js.map

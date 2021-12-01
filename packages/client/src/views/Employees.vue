@@ -2,7 +2,7 @@
   <div>
     <div className="flex justify-between">
       <h1>Employees</h1>
-      <!-- <Button href="/employees/new">Create New</Button> -->
+      <Button href="/employees/new">Create New</Button>
     </div>
     <DataTable
       v-if="persons.length > 0"
@@ -22,6 +22,7 @@ import DataTable from "@/components/DataTable.vue";
 import { getModule } from "vuex-module-decorators";
 import PersonModule from "@/store/modules/person";
 import { useStore } from "@/store";
+import Button from "@/components/Button.vue";
 
 const personModule = getModule(PersonModule, useStore());
 
