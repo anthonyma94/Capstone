@@ -20,8 +20,11 @@
         />
       </div>
     </div>
-    <div class="grid grid-cols-4 gap-10 mt-3" v-if="type === 'recurring'">
-      <div class="flex flex-col mx-auto w-full gap-1">
+    <div class="grid grid-cols-4 gap-10 mt-3">
+      <div
+        class="flex flex-col mx-auto w-full gap-1"
+        v-if="type === 'recurring'"
+      >
         <h3 class="mb-6">Shift Days</h3>
         <div
           class="flex justify-between gap-3"
@@ -29,26 +32,28 @@
           :key="name"
         >
           <span>{{ name }}</span>
-          <Checkbox
-            name="dayName"
-            :value="index"
-            v-model="recurringFormData.days"
-          />
+          <Checkbox name="dayName" :value="index" v-model="formData.days" />
         </div>
+      </div>
+      <div class="flex flex-col mx-auto w-full gap-1" v-else>
+        <h3 class="mb-6">Shift Date</h3>
+        <Calendar placeholder="Date" v-model="formData.date" />
       </div>
       <div class="flex flex-col gap-1">
         <h3>Shift Times</h3>
         <span class="text-sm">Shift must be at least 3 hours.</span>
         <Calendar
           placeholder="Start"
-          v-model="recurringFormData.start"
+          v-model="formData.start"
           hourFormat="12"
+          :step-minute="15"
           :time-only="true"
         />
         <Calendar
           placeholder="End"
-          v-model="recurringFormData.end"
+          v-model="formData.end"
           hourFormat="12"
+          :step-minute="15"
           :time-only="true"
         />
       </div>
@@ -67,12 +72,13 @@
             :options="jobTitleOptions"
             option-label="name"
             option-value="value"
-            v-model="recurringFormData.employees[num].jobId"
+            v-model="formData.employees[num].jobId"
+            class="flex-grow"
           />
           <Input
             placeholder="Number of Employees"
             type="number"
-            v-model="recurringFormData.employees[num].amount"
+            v-model="formData.employees[num].amount"
           />
         </div>
       </div>
@@ -91,7 +97,7 @@
 import Dialog from "primevue/dialog";
 import dayNames from "@/assets/dayNames";
 import Checkbox from "primevue/checkbox";
-import { watch, computed, ref, onMounted } from "vue";
+import { watch, computed, ref } from "vue";
 import Calendar from "primevue/calendar";
 import Button from "@/components/Button.vue";
 import Input from "primevue/inputtext";
@@ -126,8 +132,9 @@ const selectOptions = [
 const type = ref<"recurring" | "one-time">("recurring");
 const internalVisible = ref(props.visible);
 
-const recurringFormData = ref({
+const formData = ref({
   days: [] as number[],
+  date: undefined as Date | undefined,
   start: undefined as Date | undefined,
   end: undefined as Date | undefined,
   employees: [
@@ -146,25 +153,29 @@ const rowsOfEmp = ref(1);
 const empRowRequired = (value: any) =>
   value.some((item: any) => !!item.jobId && !!item.amount);
 
-const recurringShiftEnd = (value: any) =>
+const shiftEnd = (value: any) =>
   dayjs(value).isAfter(
-    dayjs(recurringFormData.value.start)
+    dayjs(formData.value.start)
       .add(3, "hours")
       .subtract(1, "minute")
   );
 
+const dayOrDateRequired = (value: any) =>
+  formData.value.days.length > 0 || !!formData.value.date;
+
 const rules = {
   recurringFormData: {
-    days: { required },
+    days: { required: dayOrDateRequired },
+    date: { required: dayOrDateRequired },
     start: { required },
-    end: { required, afterStart: recurringShiftEnd },
+    end: { required, afterStart: shiftEnd },
     employees: { required: empRowRequired }
   }
 };
 
 const recurringFormData$ = useVuelidate(
   rules,
-  { recurringFormData },
+  { recurringFormData: formData },
   { $autoDirty: true }
 );
 
@@ -181,38 +192,39 @@ const jobTitleOptions = computed(() =>
 // Methods
 
 const handleSubmit = async () => {
-  if (type.value === "recurring") {
-    const data: {
-      type: "recurring";
-      days: number[];
-      start: Date;
-      end: Date;
-      employees: { jobId: string; amount: number }[];
-    } = {
-      type: type.value,
-      start: recurringFormData.value.start!,
-      end: recurringFormData.value.end!,
-      days: recurringFormData.value.days,
-      employees: recurringFormData.value.employees
-        .filter(x => !!x.jobId && !!x.amount)
-        .map(x => {
-          return {
-            ...x,
-            amount: parseInt(x.amount)
-          };
-        })
-    };
+  const data: {
+    days: number[];
+    date?: Date;
+    start: Date;
+    end: Date;
+    employees: { jobId: string; amount: number }[];
+  } = {
+    start: formData.value.start!,
+    end: formData.value.end!,
+    days: formData.value.days,
+    date: formData.value.date,
+    employees: formData.value.employees
+      .filter(x => !!x.jobId && !!x.amount)
+      .map(x => {
+        return {
+          ...x,
+          amount: parseInt(x.amount)
+        };
+      })
+  };
 
-    await ruleModule.ADD_SCHEDULE_RULE(data);
-  }
+  console.log(data);
+
+  await ruleModule.ADD_SCHEDULE_RULE(data);
 
   resetForm();
 };
 
 const resetForm = () => {
   internalVisible.value = false;
-  recurringFormData.value = {
+  formData.value = {
     days: [],
+    date: undefined,
     start: undefined as Date | undefined,
     end: undefined as Date | undefined,
     employees: [
@@ -229,7 +241,7 @@ const resetForm = () => {
 };
 
 const addEmpDataRow = () => {
-  recurringFormData.value.employees.push({ jobId: "", amount: "" });
+  formData.value.employees.push({ jobId: "", amount: "" });
   rowsOfEmp.value++;
 };
 
@@ -241,6 +253,16 @@ watch(
   () => props.visible,
   () => {
     internalVisible.value = props.visible;
+  }
+);
+watch(
+  () => type.value,
+  newVal => {
+    if (newVal === "one-time") {
+      formData.value.days = [];
+    } else {
+      formData.value.date = undefined;
+    }
   }
 );
 </script>

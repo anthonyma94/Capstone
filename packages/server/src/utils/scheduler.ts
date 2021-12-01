@@ -64,14 +64,36 @@ export default class Scheduler {
 
         this.repo.persist(schedule);
 
-        const allRules = await this.scheduleRuleRepo.findAll({
-            populate: true,
-            disableIdentityMap: true
-        });
+        const allRules = await this.scheduleRuleRepo.find(
+            {
+                day: {
+                    $or: [
+                        {
+                            date: {
+                                $gte: scheduleStart.toDate(),
+                                $lte: scheduleEnd.toDate()
+                            }
+                        },
+                        {
+                            day: {
+                                $ne: null
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                populate: true,
+                disableIdentityMap: true
+            }
+        );
 
-        // Map rule items into 1D array (TODO: add specific date rules to here)
+        // Map rule items into 1D array
         const allRuleItems = allRules.flatMap(item => {
-            const date = scheduleStart.add(item.day.day!, "days");
+            const date =
+                item.day.day !== undefined
+                    ? scheduleStart.add(item.day.day, "days")
+                    : dayjs(item.day.date).utc();
             const start = dayjs(
                 `${dayjs(date).format("YYYY-MM-DD")} ${item.day.start}`,
                 "YYYY-MM-DD HH:mm"
@@ -178,7 +200,8 @@ export default class Scheduler {
                 const shiftDate = scheduleStart.add(weekday, "day");
                 const duration = dayjs(item.day.end, "HH:mm").diff(
                     dayjs(item.day.start, "HH:mm"),
-                    "hour"
+                    "hour",
+                    true
                 );
                 const shiftStart = dayjs(
                     `${shiftDate.format("YYYY-MM-DD")} ${item.day.start}`,
@@ -233,7 +256,11 @@ export default class Scheduler {
         // rulePerDay === Rule array per day
 
         for (const ruleItem of allRuleItems) {
-            const shiftDuration = ruleItem.end.diff(ruleItem.start, "hour");
+            const shiftDuration = ruleItem.end.diff(
+                ruleItem.start,
+                "hour",
+                true
+            );
             const dayOfWeek = ruleItem.start.day();
 
             // Only these employees can work

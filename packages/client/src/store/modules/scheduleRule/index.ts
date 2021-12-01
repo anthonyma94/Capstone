@@ -35,8 +35,8 @@ export default class ScheduleRuleModule extends BaseModule<ScheduleRule> {
 
     @Action
     async ADD_SCHEDULE_RULE(params: {
-        type: "recurring";
         days: number[];
+        date?: Date;
         start: Date;
         end: Date;
         employees: { jobId: string; amount: number }[];
@@ -44,7 +44,21 @@ export default class ScheduleRuleModule extends BaseModule<ScheduleRule> {
         await updateServer(this.context.commit, async () => {
             const res = await axios.post("/schedule/rules", params);
 
-            this.data.push(res.data);
+            this.data.push(...res.data);
+        });
+    }
+
+    @Action
+    async DELETE_SCHEDULE_RULE(id: string) {
+        await updateServer(this.context.commit, async () => {
+            const res = await axios.delete(`/schedule/rules/${id}`);
+
+            if (res.status < 300) {
+                this.context.commit(
+                    MutationTypes.SET_DATA,
+                    this.data.filter(x => x.id !== id)
+                );
+            }
         });
     }
 

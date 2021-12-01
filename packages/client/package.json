@@ -24,7 +24,7 @@
         "@popperjs/core": "^2.10.2",
         "@vuelidate/core": "^2.0.0-alpha.24",
         "@vuelidate/validators": "^2.0.0-alpha.21",
-        "@vueuse/core": "^6.8.0",
+        "@vueuse/core": "^7.1.2",
         "axios": "^0.21.1",
         "core-js": "^3.6.5",
         "primeicons": "^4.1.0",

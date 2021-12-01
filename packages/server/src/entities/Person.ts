@@ -39,7 +39,7 @@ export class Person extends BaseEntity {
     @Property()
     role!: string;
 
-    @Property()
+    @Property({ columnType: "float" })
     pay!: number;
 
     @Property()

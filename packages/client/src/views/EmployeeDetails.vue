@@ -1,8 +1,15 @@
 <template>
   <div>
+    <Toast />
     <div class="flex justify-between">
       <h1>Employee Info</h1>
-      <Button v-if="authModule.IS_ADMIN" @click="onSaveClick">Save</Button>
+      <Button
+        v-if="authModule.IS_ADMIN"
+        @click="onSaveClick"
+        :disabled="v$.$invalid"
+        :loading="loadingAddPerson"
+        >Save</Button
+      >
     </div>
     <form>
       <div class="grid gap-4 grid-cols-4">
@@ -32,10 +39,11 @@
           placeholder="City"
           v-model="data.city"
         />
-        <Input
+        <Select
           :disabled="!authModule.IS_ADMIN"
-          class="col-span-1"
+          class="col-span-2 md:col-span-1"
           placeholder="Province"
+          :options="provinceOptions"
           v-model="data.province"
         />
         <Input
@@ -62,12 +70,14 @@
           class="col-span-2 md:col-span-1"
           placeholder="Wage"
           v-model="data.pay"
+          type="number"
+          step=".01"
         />
         <Select
           :disabled="!authModule.IS_ADMIN"
           class="col-span-2 md:col-span-1"
           placeholder="Job"
-          :options="jobTitles.map(x => x.name).sort()"
+          :options="jobTitles"
           v-model="data.jobTitle"
         />
         <Input
@@ -75,26 +85,29 @@
           class="col-span-2 md:col-span-1"
           placeholder="Hours"
           v-model="data.maxWeeklyHours"
+          type="number"
         />
       </div>
     </form>
     <hr />
     <h1>Availability</h1>
     <DataTable
-      v-if="computedAvailabilities.length > 0"
       key="id"
       :cols="availabilityCols"
       v-model="computedAvailabilities"
-      @update:model-value="onAvailabilityUpdate"
       :editable="authModule.IS_ADMIN"
       :deletable="authModule.IS_ADMIN"
     >
       <template #toolbar>
-        <Button
-          v-if="authModule.IS_ADMIN"
-          @click="showAddAvailability = !showAddAvailability"
-          >Add Availability</Button
-        >
+        <Toolbar class="w-full mr-6">
+          <template #left>
+            <Button
+              v-if="authModule.IS_ADMIN"
+              @click="showAddAvailability = !showAddAvailability"
+              >Add Availability</Button
+            >
+          </template>
+        </Toolbar>
       </template>
     </DataTable>
     <AddAvailabilityModal v-model:visible="showAddAvailability" />
@@ -102,14 +115,15 @@
 </template>
 <script setup lang="ts">
 import Button from "@/components/Button.vue";
+import Toolbar from "primevue/toolbar";
 import Input from "@/components/inputs/Input.vue";
 import DataTable from "@/components/DataTable.vue";
 import Select from "@/components/inputs/Select.vue";
 import dayNames from "@/assets/dayNames";
 import { useRoute } from "vue-router";
-import { computed, watchEffect } from "@vue/runtime-core";
+import { computed, onMounted, watch } from "@vue/runtime-core";
 import { ref } from "vue";
-import { required } from "@vuelidate/validators";
+import { helpers, required } from "@vuelidate/validators";
 import useVuelidate from "@vuelidate/core";
 import { Person } from "@/store/modules/person/types";
 import { getModule } from "vuex-module-decorators";
@@ -118,7 +132,15 @@ import { useStore } from "@/store";
 import JobTitleModule from "@/store/modules/jobTitle";
 import AddAvailabilityModal from "@/components/dialogs/AddAvailabilityModal.vue";
 import AuthModule from "@/store/modules/auth";
-import { convertTo12Hour, convertTo24Hour } from "@/services/dates";
+import dayjs from "dayjs";
+import {
+  convertTo12Hour,
+  localecompareDayjs,
+  localecompareDaynames
+} from "@/services/dates";
+import provinceNames from "@/assets/provinceNames";
+import { useToast } from "primevue/usetoast";
+import Toast from "primevue/toast";
 
 // Props and prop interface
 
@@ -138,24 +160,27 @@ interface PersonRef
   role: string;
 }
 
+const loadingAddPerson = ref(false);
+
 const availabilityCols: InstanceType<typeof DataTable>["$props"]["cols"] = [
   {
     id: "day",
     editable: false,
-    sortFunc: (x, y) => {
-      const sortNames = dayNames.map(i => i.toLowerCase());
-      if (
-        sortNames.indexOf((x as string).toLowerCase()) >
-        sortNames.indexOf((y as string).toLowerCase())
-      ) {
-        return 1;
-      } else if (
-        sortNames.indexOf((x as string).toLowerCase()) <
-        sortNames.indexOf((y as string).toLowerCase())
-      ) {
-        return -1;
-      } else return 0;
-    }
+    sortFunc: (x, y) => localecompareDaynames(x, y)
+  },
+  {
+    id: "start",
+    sortFunc: (x, y) =>
+      localecompareDayjs(dayjs(x, "hh:mm A"), dayjs(y, "hh:mm A")),
+    dataType: "time",
+    validationFunc: x => dayjs(x, ["hh:mm A"]).isValid()
+  },
+  {
+    id: "end",
+    sortFunc: (x, y) =>
+      localecompareDayjs(dayjs(x, "hh:mm A"), dayjs(y, "hh:mm A")),
+    dataType: "time",
+    validationFunc: x => dayjs(x, ["hh:mm A"]).isValid()
   }
 ];
 
@@ -175,9 +200,30 @@ const data = ref<PersonRef>({
   availabilities: []
 });
 
+const toast = useToast();
+
+const postalRegex = helpers.regex(/^\w\w\w\s?\w\w\w$/gi);
+const phoneRegex = helpers.regex(/^\+?1?\d{10}$/gi);
+const wage = (value: any) => getDecimalPlaces(parseFloat(value)) <= 2;
+
+const getDecimalPlaces = (value: number) => {
+  if (Math.floor(value) !== value)
+    return value.toString().split(".")[1].length || 0;
+  return 0;
+};
+
 const rules = {
   firstName: { required },
-  lastName: { required }
+  lastName: { required },
+  address: { required },
+  province: { required },
+  postal: { required, postalRegex },
+  city: { required },
+  jobTitle: { required },
+  role: { required },
+  pay: { required, wage },
+  phone: { required, phoneRegex },
+  maxWeeklyHours: { required }
 };
 
 const showAddAvailability = ref(false);
@@ -199,69 +245,100 @@ const computedAvailabilities = computed({
     if (val.length < computedAvailabilities.value.length) {
       // Something is deleted
       const ids = val.map(i => i.id);
-      const item = computedAvailabilities.value.find(x => !ids.includes(x.id))!;
+      const deletedItem = computedAvailabilities.value.find(
+        x => !ids.includes(x.id)
+      )!;
       await personModule.REMOVE_AVAILABILITY({
-        id: route.params.id as string,
-        item: {
-          id: item.id,
-          isApproved: true,
-          day: {
-            id: "",
-            start: convertTo24Hour(item.start),
-            end: convertTo24Hour(item.end),
-            day: parseInt(item.day)
-          }
-        }
+        personId: route.params.id as string,
+        availability: deletedItem.id
       });
     } else {
-      console.log(val);
+      // Something is changed
+      const original = computedAvailabilities.value;
+      let changedIndex: number | undefined = undefined;
+      for (let i = 0; i < original.length; i++) {
+        if (
+          original[i].start !== val[i].start ||
+          original[i].end !== val[i].end
+        ) {
+          changedIndex = i;
+          break;
+        }
+      }
+
+      if (changedIndex !== undefined) {
+        const item = val[changedIndex];
+
+        await personModule.EDIT_AVAILABILITY({
+          id: data.value.id,
+          availability: {
+            ...item,
+            day: dayNames.findIndex(x => x === item.day)!
+          }
+        });
+      }
     }
   }
 });
 
-// const computedPerson = computed(() => {
-//   return {
-//     ...data.value,
-//     jobTitle: jobTitles.value.find(x => x.name === data.value.jobTitle)!,
-//     // availabilities: data.value.availabilities.map(i => {
-//     //   return {
-//     //     id: i.id,
-//     //     day: dayNames[i.day.day!],
-//     //     start: i.day.start,
-//     //     end: i.day.end,
-//     //   } as Person["availabilities"];
-//     role: data.value.role as "FT" | "PT",
-//     pay: parseFloat(data.value.pay),
-//     maxWeeklyHours: parseInt(data.value.maxWeeklyHours)
-//   };
-// });
+const jobTitles = jobModule.GET_ALL.value
+  .map(item => {
+    return {
+      text: item.name,
+      value: item.id
+    };
+  })
+  .sort((x, y) => x.text.localeCompare(y.text));
 
-const jobTitles = jobModule.GET_ALL;
+const provinceOptions = Object.keys(provinceNames).map(key => {
+  return {
+    text: (provinceNames as any)[key],
+    value: key
+  };
+});
 
 // Methods
-const onAvailabilityUpdate = async (e: any) => {
-  // console.log(e)
+const onSaveClick = async () => {
+  loadingAddPerson.value = true;
+  const res: any = {
+    ...data.value,
+    pay: parseFloat(data.value.pay),
+    maxWeeklyHours: parseFloat(data.value.maxWeeklyHours)
+  };
+  delete res.availabilities;
+
+  await personModule.EDIT_PERSON(res);
+  loadingAddPerson.value = false;
+
+  toast.add({ severity: "info", summary: "Employee updated.", life: 3000 });
 };
-const onSaveClick = async (e: MouseEvent) => {
-  // await personHook.UPDATE_DATA(data.value);
-  // await personModule.UPDATE_DATA(computedPerson.value);
+
+const initPersonData = () => {
+  const person = personModule.GET_BY_ID(route.params.id as string);
+  if (person.value) {
+    data.value = {
+      ...person.value,
+      pay: person.value.pay.toString() || "",
+      maxWeeklyHours: person.value.maxWeeklyHours.toString() || "",
+      jobTitle: person.value.jobTitle.id
+    };
+  }
 };
 
 // Watch
 
 // Updates page data if given person ID
-watchEffect(() => {
-  if (route.params.id !== "new") {
-    const person = personModule.GET_BY_ID(route.params.id as string);
-    if (person.value) {
-      data.value = {
-        ...person.value,
-        pay: person.value.pay.toString() || "",
-        maxWeeklyHours: person.value.maxWeeklyHours.toString() || "",
-        jobTitle: person.value.jobTitle.name
-      };
+watch(
+  () => route.params.id,
+  newVal => {
+    if (newVal !== "new") {
+      initPersonData();
     }
   }
+);
+
+onMounted(() => {
+  initPersonData();
 });
 </script>
 <style scoped lang="postcss"></style>

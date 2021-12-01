@@ -11,11 +11,17 @@ export default class ScheduleController extends BaseHttpController {
     constructor(@inject(ScheduleService) private service: ScheduleService) {
         super();
     }
-    @Get("/rules")
-    public async getRules(req: Request, res: Response, next: NextFunction) {
+    @Get("/rules", AuthMiddleware)
+    public async getRules() {
         const resp = await this.service.getRules();
 
         return this.json(resp, 200);
+    }
+    @Get("/startdates", AuthMiddleware)
+    public async getScheduleStartDates() {
+        const res = await this.service.getScheduleStartDates();
+
+        return this.json(res, 200);
     }
     @Get("/")
     @Post("/", AuthMiddleware)
@@ -41,14 +47,6 @@ export default class ScheduleController extends BaseHttpController {
 
     @Put("/item", AuthMiddleware)
     public async editScheduleItem(req: Request) {
-        // body:
-        // {
-        //     id: schedule item id,
-        //     date: schedule item Date,
-        //     start: schedule item start,
-        //     end: schedule item end,
-        //     personId: schedule item person Id if exists
-        // }
         const date = new Date(req.body.date);
 
         await this.service.editScheduleItem({
@@ -91,13 +89,22 @@ export default class ScheduleController extends BaseHttpController {
     public async addScheduleRule(req: Request) {
         const data = req.body;
 
-        if (data.type === "recurring") {
-            data.start = dayjs(data.start);
-            data.end = dayjs(data.end);
+        data.start = dayjs(data.start);
+        data.end = dayjs(data.end);
+        if (data.date) {
+            data.date = dayjs(data.date);
         }
 
         const res = await this.service.addScheduleRule(data);
 
         return this.json(res);
+    }
+
+    @Delete("/rules/:id", AuthMiddleware)
+    public async deleteScheduleRule(req: Request) {
+        const id = req.params.id;
+
+        await this.service.deleteScheduleRule(id);
+        return this.statusCode(200);
     }
 }

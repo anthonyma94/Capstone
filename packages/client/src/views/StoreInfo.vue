@@ -44,32 +44,22 @@
             <tr v-for="(day, index) in dayNames" :key="day">
               <th>{{ day }}</th>
               <td>
-                <!-- <Input
-                  placeholder="9:00"
-                  :show-label="false"
-                  v-model="storeHours[index].start"
-                  :disabled="!authModule.IS_ADMIN"
-                /> -->
                 <Calendar
                   v-model="storeHours[index].start"
                   :timeOnly="true"
                   placeholder="09:00 AM"
                   hourFormat="12"
+                  :step-minute="30"
                   :manual-input="true"
                 />
               </td>
               <td>
-                <!-- <Input
-                  placeholder="18:00"
-                  :show-label="false"
-                  v-model="storeHours[index].end"
-                  :disabled="!authModule.IS_ADMIN"
-                /> -->
                 <Calendar
                   v-model="storeHours[index].end"
                   :timeOnly="true"
                   placeholder="08:00 PM"
                   hourFormat="12"
+                  :step-minute="30"
                   :manual-input="true"
                 />
               </td>
@@ -83,7 +73,6 @@
       <h1>Shift Scheduling Rules</h1>
       <AddShiftSchedulingModal v-model:visible="toggles.addShiftSchedule" />
       <DataTable
-        v-if="scheduleRuleData && scheduleRuleData.length > 0"
         v-model="scheduleRuleData"
         :cols="scheduleRuleTitleCols"
         :editable="false"
@@ -103,10 +92,10 @@
       <hr />
       <h1>Job Titles</h1>
       <DataTable
-        v-if="computedJobTitle.length > 0"
         v-model="computedJobTitle"
         :cols="titleCols"
         :editable="false"
+        :deletable="checkJobTitleDeletable"
       >
         <template #toolbar>
           <Toolbar class="w-full mr-4">
@@ -167,7 +156,7 @@ import { useStore } from "@/store";
 import JobTitleModule from "@/store/modules/jobTitle";
 import ScheduleRuleModule from "@/store/modules/scheduleRule";
 import AddShiftSchedulingModal from "@/components/dialogs/AddShiftSchedulingModal.vue";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import AuthModule from "@/store/modules/auth";
 import { convertTo12Hour, localecompareDaynames } from "@/services/dates";
 import Calendar from "primevue/calendar";
@@ -253,41 +242,72 @@ const scheduleRuleTitleCols = [
 ];
 
 // Computed
-const scheduleRuleData = computed(() => {
-  if (scheduleRuleModule.GET_ALL.value?.length > 0) {
-    return scheduleRuleModule.GET_ALL.value.map(item => {
-      const start = dayjs(item.day.start, "HH:mm");
-      const end = dayjs(item.day.end, "HH:mm");
-      const duration = end.diff(start, "hour");
-      const emps = item.rules.reduce((acc, cur) => {
-        if (!(cur.jobTitle.name in acc)) {
-          acc[cur.jobTitle.name] = cur.amount;
-        } else {
-          acc[cur.jobTitle.name] += cur.amount;
-        }
-        acc.total = acc.total ? acc.total + cur.amount : cur.amount;
-        return acc;
-      }, {} as any);
-      return {
-        day: dayNames[item.day.day || 0],
-        start: convertTo12Hour(item.day.start),
-        end: convertTo12Hour(item.day.end),
-        employees: Object.keys(emps)
-          .sort((a, b) => {
-            if (a.toLowerCase() === "total") {
-              return 1;
-            } else if (b.toLowerCase() === "total") {
-              return -1;
-            } else return a.localeCompare(b);
-          })
-          .map(key => `${key.pascalToWords()}: ${emps[key]}`)
-          .join("\n"),
-        billedHours:
-          item.rules.reduce((acc, cur) => acc + cur.amount, 0) * duration
-      };
-    });
+const scheduleRuleData = computed<
+  {
+    id: string;
+    day: string;
+    start: string;
+    end: string;
+    employees: string;
+    billedHours: number;
+  }[]
+>({
+  get() {
+    if (scheduleRuleModule.GET_ALL.value?.length > 0) {
+      return scheduleRuleModule.GET_ALL.value.map(item => {
+        let start: Dayjs;
+        let end: Dayjs;
+        if (item.day.day !== undefined && item.day.day !== null) {
+          start = dayjs(item.day.start, "HH:mm");
+          end = dayjs(item.day.end, "HH:mm");
+        } else if (item.day.date) {
+          start = dayjs(
+            `${item.day.date} ${item.day.start}`,
+            "YYYY-MM-DD HH:mm"
+          );
+          end = dayjs(`${item.day.date} ${item.day.end}`, "YYYY-MM-DD HH:mm");
+        } else throw new Error("Missing weekday and date.");
+        const duration = end.diff(start, "hour", true);
+        const emps = item.rules.reduce((acc, cur) => {
+          if (!(cur.jobTitle.name in acc)) {
+            acc[cur.jobTitle.name] = cur.amount;
+          } else {
+            acc[cur.jobTitle.name] += cur.amount;
+          }
+          acc.total = acc.total ? acc.total + cur.amount : cur.amount;
+          return acc;
+        }, {} as any);
+        return {
+          id: item.id,
+          day: item.day.day
+            ? dayNames[item.day.day]
+            : start.format("MMM DD, YYYY"),
+          start: convertTo12Hour(item.day.start),
+          end: convertTo12Hour(item.day.end),
+          employees: Object.keys(emps)
+            .sort((a, b) => {
+              if (a.toLowerCase() === "total") {
+                return 1;
+              } else if (b.toLowerCase() === "total") {
+                return -1;
+              } else return a.localeCompare(b);
+            })
+            .map(key => `${key.pascalToWords()}: ${emps[key]}`)
+            .join("\n"),
+          billedHours:
+            item.rules.reduce((acc, cur) => acc + cur.amount, 0) * duration
+        };
+      });
+    }
+    return [];
+  },
+  async set(newVal) {
+    const mapped = newVal.map(x => x.id);
+    const deletedItem = scheduleRuleModule.GET_ALL.value.find(
+      x => !mapped.includes(x.id)
+    )!;
+    await scheduleRuleModule.DELETE_SCHEDULE_RULE(deletedItem?.id);
   }
-  return [];
 });
 
 const computedJobTitle = computed<
@@ -311,8 +331,6 @@ const computedJobTitle = computed<
     );
   },
   async set(newValue) {
-    console.log(newValue);
-
     const itemsDeleted = jobModule.GET_ALL.value.filter(
       x => !newValue.map(x => x.id).includes(x.id)
     );
@@ -324,6 +342,11 @@ const computedJobTitle = computed<
 });
 
 // Methods
+
+const checkJobTitleDeletable = (e: any) => {
+  const res = e.numOfEmps === 0;
+  return res;
+};
 
 const handleHourChange = async () => {
   const data = storeHours.value
@@ -356,7 +379,6 @@ const handleHourChange = async () => {
         end: dayjs(item.end)
       };
     });
-  console.log(data);
   await storeModule.CHANGE_HOURS({ id: storeModule.GET_ALL.value.id, data });
 };
 

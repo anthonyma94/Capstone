@@ -40,6 +40,18 @@ export default class StoreModule extends BaseModule<Store> {
             ) || [];
     }
 
+    get SCHEDULE_START_DATES() {
+        return async () => {
+            const res = await axios.get("/schedule/startdates");
+
+            return res.data.map((item: any) =>
+                dayjs(item)
+                    .add(12, "hours")
+                    .toDate()
+            );
+        };
+    }
+
     [MutationTypes.REMOVE_DATA](data: Store | Store[]): void {
         throw new Error("Method not implemented.");
     }

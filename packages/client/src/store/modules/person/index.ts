@@ -1,14 +1,10 @@
 import axios from "@/services/axios";
-import {
-    ActionTypes,
-    GetterTypes,
-    LoadingTypes,
-    MutationTypes
-} from "@/store/types";
+import { ActionTypes, GetterTypes, MutationTypes } from "@/store/types";
 import { computed } from "vue";
-import { Action, Module, Mutation, VuexModule } from "vuex-module-decorators";
+import { Action, Module, Mutation } from "vuex-module-decorators";
 import BaseModule, { updateServer } from "../BaseModule";
 import { Person, PersonActionTypes } from "./types";
+import { Dayjs } from "dayjs";
 
 @Module({ namespaced: true, name: "person" })
 export default class PersonModule extends BaseModule<Person> {
@@ -49,39 +45,95 @@ export default class PersonModule extends BaseModule<Person> {
         });
     }
 
-    @Action
     async [ActionTypes.DELETE_DATA](data: Person) {}
 
     @Action({ rawError: true })
     async [PersonActionTypes.ADD_AVAILBILITY](params: {
-        id: string;
-        data: Person["availabilities"] | Person["availabilities"][0];
+        personId: string;
+        availabilities: {
+            start: string;
+            end: string;
+            day: number;
+        }[];
     }) {
         await updateServer(this.context.commit, async () => {
-            const { id, data } = params;
             const res = await axios.post(
-                `/person/${id}/availability`,
-                Array.isArray(data) ? data : [data]
+                `/person/${params.personId}/availability`,
+                params.availabilities
             );
-            console.log(res);
-            this.context.commit(MutationTypes.UPDATE_DATA, res.data);
+            console.log(res.data);
+
+            const personIndex = this.data.findIndex(
+                x => x.id === params.personId
+            )!;
+            this.data[personIndex].availabilities.push(...res.data);
+            // this.context.commit(MutationTypes.UPDATE_DATA, res.data);
         });
     }
 
-    @Action({ rawError: true })
+    @Action
     async [PersonActionTypes.REMOVE_AVAILABILITY](params: {
+        personId: string;
+        availability: string;
+    }) {
+        console.log(params.availability);
+        await updateServer(this.context.commit, async () => {
+            const { personId, availability } = params;
+            await axios.delete(
+                `/person/${personId}/availability/${availability}`
+            );
+            const personIndex = this.data.findIndex(i => i.id === personId);
+            this.data[personIndex].availabilities = this.data[
+                personIndex
+            ].availabilities.filter(x => x.id !== availability);
+        });
+    }
+
+    @Action
+    async EDIT_AVAILABILITY(params: {
         id: string;
-        item: Person["availabilities"][0];
+        availability: {
+            id: string;
+            start: string;
+            end: string;
+            day: number;
+        };
     }) {
         await updateServer(this.context.commit, async () => {
-            const res = await axios.delete(
+            const res = await axios.put(
                 `/person/${params.id}/availability`,
-                { data: params.item }
+                params.availability
             );
-            const index = this.data.findIndex(i => i.id === params.id);
-            const person = this.data[index];
-            person.availabilities.filter(x => x.id !== params.id);
-            this.context.commit(MutationTypes.UPDATE_DATA, person);
+
+            const personIndex = this.data.findIndex(x => x.id === params.id)!;
+            const changedIndex = this.data[
+                personIndex
+            ].availabilities.findIndex(x => x.id === params.availability.id)!;
+
+            this.data[personIndex].availabilities[changedIndex] = res.data;
+        });
+    }
+
+    @Action
+    async EDIT_PERSON(params: {
+        pay: number;
+        maxWeeklyHours: number;
+        jobTitle: string;
+        role: string;
+        id: string;
+        firstName: string;
+        lastName: string;
+        address: string;
+        province: string;
+        postal: string;
+        city: string;
+        phone: string;
+    }) {
+        await updateServer(this.context.commit, async () => {
+            const res = await axios.put(`/person/${params.id}`, params);
+
+            const personIndex = this.data.findIndex(x => x.id === params.id);
+            this.data[personIndex] = res.data;
         });
     }
 }

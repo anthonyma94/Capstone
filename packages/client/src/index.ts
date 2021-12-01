@@ -14,6 +14,7 @@ import { fab } from "@fortawesome/free-brands-svg-icons";
 import { far } from "@fortawesome/free-regular-svg-icons";
 import "tippy.js/dist/tippy.css";
 import dayjsRegister from "@/services/dates";
+import ToastService from "primevue/toastservice";
 
 register();
 dayjsRegister();
@@ -24,4 +25,5 @@ createApp(App)
     .use(store, key)
     .use(router)
     .use(PrimeVue)
+    .use(ToastService)
     .mount("#app");

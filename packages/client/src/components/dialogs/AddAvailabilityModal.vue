@@ -22,18 +22,34 @@
           <tr v-for="(day, index) in dayNames" :key="day">
             <th>{{ day }}</th>
             <td>
-              <Input
+              <Calendar
+                v-model="availabilityRef[index].start"
+                :show-time="true"
+                hour-format="12"
+                :time-only="true"
+                :step-minute="15"
+                placeholder="09:00 AM"
+              />
+              <!-- <Input
                 placeholder="9:00"
                 :show-label="false"
                 v-model="availabilityRef[index].start"
-              />
+                /> -->
             </td>
             <td>
-              <Input
+              <Calendar
+                v-model="availabilityRef[index].end"
+                :show-time="true"
+                hour-format="12"
+                :time-only="true"
+                :step-minute="15"
+                placeholder="06:00 PM"
+              />
+              <!-- <Input
                 placeholder="18:00"
                 :show-label="false"
                 v-model="availabilityRef[index].end"
-              />
+              /> -->
             </td>
           </tr>
         </tbody>
@@ -48,7 +64,7 @@
 <script setup lang="ts">
 import Dialog from "primevue/dialog";
 import dayNames from "@/assets/dayNames";
-import Input from "@/components/inputs/Input.vue";
+import Calendar from "primevue/calendar";
 import Button from "@/components/Button.vue";
 import { ref, watch } from "vue";
 import { getModule } from "vuex-module-decorators";
@@ -57,7 +73,7 @@ import { useStore } from "@/store";
 import { Person } from "@/store/modules/person/types";
 import { DayItem } from "@/store/modules/dayItem";
 import { useRoute } from "vue-router";
-import AuthModule from "@/store/modules/auth";
+import dayjs from "dayjs";
 // Prop and prop interface
 
 const props = defineProps<{
@@ -76,8 +92,8 @@ const route = useRoute();
 const availabilityRef = ref(
   [...Array(7).keys()].map(_ => {
     return {
-      start: "",
-      end: ""
+      start: undefined as Date | undefined,
+      end: undefined as Date | undefined
     };
   })
 );
@@ -89,25 +105,23 @@ const internalVisible = ref(props.visible);
 // Methods
 const onAvailabilitySubmit = async (e: any) => {
   e.preventDefault();
-  const values: Person["availabilities"] = availabilityRef.value
-    .map((i, idx) => ({
-      id: "",
-      isApproved: true,
-      day: {
+  const values = availabilityRef.value
+    .map((i, idx) => {
+      return {
         day: idx,
-        start: i.start,
-        end: i.end
-      } as DayItem
-    }))
-    .filter(i => i.day.start && i.day.end);
+        start: i.start && dayjs(i.start).format("HH:mm"),
+        end: i.end && dayjs(i.end).format("HH:mm")
+      };
+    })
+    .filter(i => i.start && i.end) as any;
   await personModule.ADD_AVAILABILITY({
-    id: route.params.id as string,
-    data: values
+    personId: route.params.id as string,
+    availabilities: values
   });
   availabilityRef.value = [...Array(7).keys()].map(_ => {
     return {
-      start: "",
-      end: ""
+      start: undefined,
+      end: undefined
     };
   });
   emits("update:visible", false);

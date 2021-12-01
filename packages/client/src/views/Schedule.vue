@@ -37,6 +37,8 @@
           selection-mode="range"
           @update:model-value="handleCalendarPickerUpdate"
           :disabledDays="[1, 2, 3, 4, 5, 6]"
+          :disabled-dates="disabledGenerateDates"
+          :min-date="minDate"
         />
         <div class="flex flex-row-reverse gap-2 w-full">
           <Button
@@ -98,6 +100,7 @@ import StoreModule from "@/store/modules/store";
 import { useStore } from "@/store";
 import dayjs from "dayjs";
 import AuthModule from "@/store/modules/auth";
+import { asyncComputed } from "@vueuse/core";
 // Prop and prop interface
 
 // Use hooks
@@ -131,19 +134,20 @@ const handleCalendarPickerUpdate = (e: [Date, Date | undefined]) => {
   }
 };
 
+const disabledGenerateDates = asyncComputed(async () => {
+  const res = await storeModule.SCHEDULE_START_DATES();
+  console.log(res);
+  return res;
+}, []);
+
 const handleConfirmGenerate = async () => {
   if (generateWeekStart.value && generateWeekStart.value[0]) {
     loadingGenerateSchedule.value = true;
     await storeModule.GENERATE_SCHEDULE(generateWeekStart.value[0]);
-    await storeModule.UPDATE_SCHEDULE(
-      dayjs()
-        .day(0)
-        .toDate()
-    );
+    await storeModule.UPDATE_SCHEDULE(weekStart.value!);
     loadingGenerateSchedule.value = false;
     generateWeekStart.value = [];
     showGenerateModal.value = false;
-    location.reload();
   }
 };
 

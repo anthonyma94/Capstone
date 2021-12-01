@@ -3,11 +3,11 @@
     <div class="flex-grow flex gap-3">
       <slot name="toolbar"></slot>
     </div>
-    <div style="width: 15rem; max-width: 100%">
+    <div v-if="ready" style="width: 15rem; max-width: 100%">
       <Input v-model="searchRef" placeholder="Search" />
     </div>
   </div>
-  <table class="w-full" v-bind="$attrs">
+  <table class="w-full" v-bind="$attrs" v-if="ready">
     <thead>
       <tr class="border-t border-b border-on-primary">
         <th
@@ -67,7 +67,10 @@
             </span>
           </slot>
         </td>
-        <td v-if="editable || deletable" class="w-16">
+        <td
+          v-if="editable || typeof deletable === 'boolean' ? deletable : true"
+          class="w-16"
+        >
           <div class="flex gap-2 content-center px-2" v-if="row._metadata.edit">
             <FAIcon
               class="cursor-pointer text-success"
@@ -113,7 +116,11 @@
               class="cursor-pointer"
               icon="trash-alt"
               type="far"
-              v-if="deletable"
+              v-if="
+                typeof deletable === 'boolean'
+                  ? deletable
+                  : deletable(modelValue.find(x => x[key] === row[key]))
+              "
               @click="handleDeleteClick(row[key])"
             />
           </div>
@@ -165,11 +172,13 @@
 </template>
 <script setup lang="ts">
 import { computed, ref } from "@vue/reactivity";
-import { onMounted, watchEffect } from "@vue/runtime-core";
+import { onMounted } from "@vue/runtime-core";
+import dayjs from "dayjs";
 import { watch } from "vue";
 import Button from "./Button.vue";
 import FAIcon from "./FAIcon.vue";
 import Input from "./inputs/Input.vue";
+import Calendar from "primevue/calendar";
 // Prop and prop interface
 interface Props {
   modelValue: { [key: string]: string | number }[];
@@ -179,14 +188,16 @@ interface Props {
     name?: string;
     show?: boolean;
     sortable?: boolean;
+    dataType?: "date" | "time" | "datetime" | null;
     sortFunc?: (x: any, y: any) => number;
     editable?: boolean;
+    validationFunc?: (x: any) => boolean;
   }[];
   pagination?: boolean;
   rowsPerPage?: number;
   searchable?: boolean;
   editable?: boolean;
-  deletable?: boolean;
+  deletable?: boolean | ((x: any) => boolean);
   selectableRow?: boolean;
 }
 interface ItemMeta {
@@ -230,94 +241,113 @@ const sortRef = ref(
 );
 
 // Computed
-const computedCols = computed(() => {
-  type RequiredCols = Required<NonNullable<Props["cols"]>[0]>;
-  const userProps =
-    props.cols?.reduce(
-      (acc, cur) => {
-        const { id, ...rest } = cur;
-        acc[id] = rest;
-        return acc;
-      },
-      {} as {
-        [id: string]: Omit<NonNullable<Props["cols"]>[0], "id">;
-      }
-    ) || {};
-  let cols = Object.keys(props.modelValue[0])
-    .map(key => {
-      const initial: RequiredCols = {
-        id: key,
-        name: key.pascalToWords(),
-        show: key !== props.key,
-        sortable: true,
-        editable: true,
-        sortFunc: function(x, y) {
-          const asc =
-            typeof x === "number" && typeof y === "number"
-              ? x - y
-              : x.toString().localeCompare(y.toString());
-          return asc;
-        },
-        ...userProps[key]
-      };
+const ready = computed(() => props.modelValue.length > 0);
 
-      return initial;
-    })
-    .filter(x => x.show);
-  return cols;
+const computedCols = computed(() => {
+  if (ready.value) {
+    type RequiredCols = Required<NonNullable<Props["cols"]>[0]>;
+    const userProps =
+      props.cols?.reduce(
+        (acc, cur) => {
+          const { id, ...rest } = cur;
+          acc[id] = rest;
+          return acc;
+        },
+        {} as {
+          [id: string]: Omit<NonNullable<Props["cols"]>[0], "id">;
+        }
+      ) || {};
+    let cols = Object.keys(props.modelValue[0])
+      .map(key => {
+        const initial: RequiredCols = {
+          id: key,
+          name: key.pascalToWords(),
+          show: key !== props.key,
+          sortable: true,
+          editable: true,
+          dataType: null,
+          sortFunc: function(x, y) {
+            const asc =
+              typeof x === "number" && typeof y === "number"
+                ? x - y
+                : x.toString().localeCompare(y.toString());
+            return asc;
+          },
+          validationFunc: x => true,
+          ...userProps[key]
+        };
+
+        return initial;
+      })
+      .filter(x => x.show);
+    return cols;
+  }
+  return [];
 });
 
 const computedData = computed(() => {
-  let data = dataRef.value;
+  if (ready.value) {
+    let data = dataRef.value;
 
-  // Sorts data
-  if (sortRef.value.by) {
-    data = data.sort((x, y) => {
-      try {
-        const first = x[sortRef.value.by];
-        const second = y[sortRef.value.by];
-        if (first === undefined || second === undefined) throw new Error();
-        const sortFunc = computedCols.value.find(x => x.id === sortRef.value.by)
-          ?.sortFunc;
-        if (!sortFunc) throw new Error();
-        const asc = sortFunc(first, second);
-        return sortRef.value.order === "asc" ? asc : asc * -1;
-      } catch {
-        return 0;
-      }
-    });
-  }
+    if (!sortRef.value.by) {
+      sortRef.value.by = computedCols.value[0].id;
+    }
 
-  if (searchRef.value) {
-    const search = new RegExp(searchRef.value, "i");
-    data = data.filter(x => {
-      const keys = Object.keys(x);
-      for (let key of keys) {
-        if (x[key]?.toString().match(search)) {
-          return true;
+    if (!sortRef.value.order) {
+      sortRef.value.order = "asc";
+    }
+
+    // Sorts data
+    if (sortRef.value.by) {
+      data = data.sort((x, y) => {
+        try {
+          const first = x[sortRef.value.by];
+          const second = y[sortRef.value.by];
+          if (first === undefined || second === undefined) throw new Error();
+          const sortFunc = computedCols.value.find(
+            x => x.id === sortRef.value.by
+          )?.sortFunc;
+          if (!sortFunc) throw new Error();
+          const asc = sortFunc(first, second);
+          return sortRef.value.order === "asc" ? asc : asc * -1;
+        } catch {
+          return 0;
         }
-      }
-      return false;
-    });
-  }
+      });
+    }
 
-  if (requiresPagination) {
-    data = data.filter((_row, index) => {
-      let start = (currentPage.value - 1) * props.rowsPerPage;
-      let end = currentPage.value * props.rowsPerPage;
-      return index >= start && index < end;
-    });
+    if (searchRef.value) {
+      const search = new RegExp(searchRef.value, "i");
+      data = data.filter(x => {
+        const keys = Object.keys(x);
+        for (let key of keys) {
+          if (x[key]?.toString().match(search)) {
+            return true;
+          }
+        }
+        return false;
+      });
+    }
+
+    if (requiresPagination) {
+      data = data.filter((_row, index) => {
+        let start = (currentPage.value - 1) * props.rowsPerPage;
+        let end = currentPage.value * props.rowsPerPage;
+        return index >= start && index < end;
+      });
+    }
+    return data;
   }
-  return data;
+  return [];
 });
 
 const maxPage = computed(() => {
-  return Math.ceil(props.modelValue.length / props.rowsPerPage);
+  return Math.ceil(props.modelValue.length / props.rowsPerPage) || 0;
 });
 
 const paginationButtons = computed(() => {
   const array = Array(
-    computedData.value.length < props.rowsPerPage ? 1 : maxPage.value
+    dataRef.value.length < props.rowsPerPage ? 1 : maxPage.value
   )
     .fill(0)
     .map<number | string>((_, i) => i + 1);
@@ -375,13 +405,25 @@ const handlePagination = (e: number | string) => {
 
 const handleSaveEditClick = (id: string | number) => {
   const final = cache.value[id];
+  let valid = true;
+  for (const key of Object.keys(final)) {
+    const col = computedCols.value.find(x => x.id === key)!;
+    if (!col.validationFunc(final[key])) {
+      valid = false;
+      break;
+    }
+  }
+
   handleCancelEditClick(id);
-  const index = dataRef.value.findIndex(x => x.id === id);
-  dataRef.value[index] = {
-    ...dataRef.value[index],
-    ...final
-  };
-  emitChanges(dataRef.value[index], "edit");
+
+  if (valid) {
+    const index = dataRef.value.findIndex(x => x.id === id);
+    dataRef.value[index] = {
+      ...dataRef.value[index],
+      ...final
+    };
+    emitChanges(dataRef.value[index], "edit");
+  }
 };
 
 const handleCancelEditClick = (id: string | number) => {

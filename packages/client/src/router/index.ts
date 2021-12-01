@@ -56,7 +56,7 @@ const routes: Array<RouteRecordRaw> = [
     },
     {
         path: "/request-emp",
-        name: "RequestDetails",
+        name: "SubmitRequests",
         component: RequestDetails,
         meta: {
             show: "user"

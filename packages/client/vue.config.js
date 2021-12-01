@@ -16,22 +16,15 @@ module.exports = {
     },
     outputDir: path.resolve(__dirname, "../../dist/public"),
     configureWebpack: {
-        devtool: "source-map"
-        // module: {
-        //     rules: [
-        //         {
-        //             test: [/\.css$/i, /\.postcss$/i],
-        //             use: [
-        //                 "css-loader",
-        //                 {
-        //                     loader: "postcss-loader",
-        //                     options: {
-        //                         config: { path: "./postcss.config.js" }
-        //                     }
-        //                 }
-        //             ]
-        //         }
-        //     ]
-        // }
+        devtool: "source-map",
+        module: {
+            rules: [
+                {
+                    test: /\.mjs$/,
+                    include: /node_modules/,
+                    type: "javascript/auto"
+                }
+            ]
+        }
     }
 };

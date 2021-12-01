@@ -1,6 +1,8 @@
-import { NextFunction, Request, Response } from "express";
+import dayjs from "dayjs";
+import { Request } from "express";
 import { inject } from "inversify";
 import { Person } from "../entities/Person";
+import AuthMiddleware from "../middleware/AuthMiddleware";
 import PersonService from "../services/PersonService";
 import { Controller, Delete, Post, Put } from "../utils/decorators";
 import { BaseController } from "./BaseController";
@@ -14,42 +16,36 @@ export default class PersonController extends BaseController<
         super(service);
     }
 
-    @Post("/:id/availability")
-    public async addAvailabilities(
-        req: Request,
-        res: Response,
-        next: NextFunction
-    ) {
-        try {
-            const res = await this.service.addAvailabilities(
-                req.params.id,
-                req.body
-            );
-            return this.json(res);
-        } catch (e) {
-            return this.badRequest();
-        }
+    @Post("/:id/availability", AuthMiddleware)
+    public async addAvailabilities(req: Request) {
+        const res = await this.service.addAvailabilities({
+            personId: req.params.id,
+            availabilities: req.body
+        });
+        return this.json(res);
     }
 
-    @Delete("/:id/availability")
-    public async removeAvailabilities(
-        req: Request,
-        res: Response,
-        next: NextFunction
-    ) {
-        try {
-            await this.service.deleteAvailability(req.body);
-
-            return this.statusCode(200);
-        } catch (e) {
-            return this.badRequest(e as string);
-        }
+    @Delete("/:personid/availability/:id", AuthMiddleware)
+    public async removeAvailabilities(req: Request) {
+        await this.service.deleteAvailability(req.params.id);
+        return this.statusCode(200);
     }
 
-    @Put("/:id")
-    public async updatePerson(req: Request, res: Response, next: NextFunction) {
+    @Put("/:id/availability", AuthMiddleware)
+    public async editAvailability(req: Request) {
+        const data = req.body;
+        data.start = dayjs(data.start, ["hh:mm A", "HH:mm"]);
+        data.end = dayjs(data.end, ["hh:mm A", "HH:mm"]);
+
+        const res = await this.service.editAvailability(data);
+
+        return this.json(res);
+    }
+
+    @Put("/:id", AuthMiddleware)
+    public async updatePerson(req: Request) {
         try {
-            const res = await this.service.update(req.body);
+            const res = await this.service.updatePerson(req.body);
             return this.json(res, 200);
         } catch (e) {
             console.error(e);

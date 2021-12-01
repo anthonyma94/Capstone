@@ -1,7 +1,6 @@
 <template>
   <h1>Time Off</h1>
   <DataTable
-    v-if="computedTimeOffs.length > 0"
     v-model="computedTimeOffs"
     :deletable="false"
     :editable="false"

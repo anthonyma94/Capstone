@@ -45,7 +45,7 @@ import FullCalendar, {
   EventInput
 } from "@fullcalendar/vue3";
 import Button from "./Button.vue";
-import interactionPlugin, { Draggable } from "@fullcalendar/interaction";
+import interactionPlugin from "@fullcalendar/interaction";
 import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { computed, onMounted, ref, watch } from "vue";
@@ -84,8 +84,6 @@ const router = useRouter();
 const weekStart = ref<Date>();
 const activeDay = ref<Date>();
 const tippyInstance = ref<Instance<Props>>();
-const draggableRef = ref<HTMLElement>();
-const draggable = ref<Draggable>();
 const eventPopover = ref<HTMLElement>();
 const calendarPicker = ref<HTMLElement>();
 const fullCalendar = ref<any>();
@@ -106,6 +104,7 @@ const calendarOptions = computed(() => {
     },
     weekends: true,
     editable: props.editable,
+    slotDuration: "00:15:00",
     allDaySlot: false,
     droppable: props.editable,
     selectable: true,
@@ -113,10 +112,6 @@ const calendarOptions = computed(() => {
     slotMaxTime: slotTimes.value[1],
     schedulerLicenseKey: "CC-Attribution-NonCommercial-NoDerivatives",
     events: events.value,
-    // Dragging external items to calendar
-    drop: function(arg) {
-      console.log(arg);
-    },
     // Moving event within calendar
     eventDrop: async function(arg) {
       const event = arg.event;
@@ -125,7 +120,6 @@ const calendarOptions = computed(() => {
     },
     eventResize: async function(args) {
       const event = args.event;
-      // const resource = args;
       await handleEventChange(event);
     },
     // Gets new schedule if shown date is in a different week
@@ -197,7 +191,7 @@ const calendarOptions = computed(() => {
       }
     },
     // Applies to all elements within calendar
-    unselect: function(dateArgs) {
+    unselect: function() {
       tippyInstance.value = undefined;
     },
     resources: resources.value,
@@ -271,7 +265,7 @@ const resources = computed(() => {
 });
 
 const slotTimes = computed<[string, string]>(() => {
-  const hours = storeModule.GET_STORE_HOURS;
+  const hours = storeModule.GET_STORE_HOURS.value;
   let slotMinTime: string = "00:00:00";
   let slotMaxTime: string = "24:00:00";
 
@@ -438,23 +432,6 @@ watch(
   () => activeDay.value,
   newVal => {
     emits("update:activeDay", newVal);
-  }
-);
-watch(
-  () => draggableRef.value,
-  newVal => {
-    if (newVal) {
-      draggable.value = new Draggable(newVal, {
-        itemSelector: ".item-class",
-        eventData: function(eventEl) {
-          return {
-            title: eventEl.innerText
-          };
-        }
-      });
-    } else {
-      draggable.value = undefined;
-    }
   }
 );
 </script>
