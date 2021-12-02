@@ -2,6 +2,7 @@ FROM node:14-alpine AS prod
 
 ENV NODE_ENV=production
 ENV SERVER_PORT=3000
+ENV TZ=America/Toronto
 
 WORKDIR /app
 
