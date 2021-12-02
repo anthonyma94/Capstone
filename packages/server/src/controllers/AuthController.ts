@@ -24,41 +24,43 @@ export default class AuthController extends BaseHttpController {
 
     @Post("/login")
     public async login(req: Request, res: Response) {
-        const { username, password } = req.body;
+        try {
+            const { username, password } = req.body;
 
-        if (!username) {
-            throw new Error("Missing username.");
+            if (!username) {
+                throw new Error("Missing username.");
+            }
+
+            if (!password) {
+                throw new Error("Missing password.");
+            }
+
+            const user = await this.repo.findOneOrFail({ username });
+            const passwordValid = Authentication.checkPassword(
+                password,
+                user.password
+            );
+
+            if (!passwordValid) {
+                return this.statusCode(403);
+            }
+
+            const token = generateAccessToken({
+                user: user.person?.id || username,
+                role: user.role
+            });
+
+            res.cookie("jwt", token, {
+                httpOnly: true
+            });
+
+            return this.json({
+                user: username,
+                role: user.role
+            });
+        } catch (e) {
+            return this.badRequest();
         }
-
-        if (!password) {
-            throw new Error("Missing password.");
-        }
-
-        const user = await this.repo.findOneOrFail({ username });
-        const passwordValid = Authentication.checkPassword(
-            password,
-            user.password
-        );
-
-        if (!passwordValid) {
-            return this.statusCode(403);
-        }
-
-        console.log(user.person?.id);
-
-        const token = generateAccessToken({
-            user: user.person?.id || username,
-            role: user.role
-        });
-
-        res.cookie("jwt", token, {
-            httpOnly: true
-        });
-
-        return this.json({
-            user: username,
-            role: user.role
-        });
     }
 
     @Get("/logout")

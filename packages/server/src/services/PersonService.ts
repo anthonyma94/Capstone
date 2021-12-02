@@ -9,10 +9,8 @@ import Availability from "../entities/Availability";
 import { Person } from "../entities/Person";
 import { InjectRepo } from "../utils/decorators";
 import { BaseService } from "./BaseService";
-
-import util from "util";
 import DayItem from "../entities/DayItem";
-import { Dayjs } from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import Authentication from "../entities/Authentication";
 
 @provide(PersonService)
@@ -54,8 +52,6 @@ export default class PersonService extends BaseService<Person> {
         const data: Partial<Person> = entity;
         if (data.availabilities) delete data.availabilities;
 
-        // console.log(data);
-
         const res = wrap(item).assign(data, {
             merge: true,
             mergeObjects: true
@@ -73,6 +69,29 @@ export default class PersonService extends BaseService<Person> {
             day: number;
         }[];
     }) => {
+        const existingAvailabilities = (
+            await this.repo.findOneOrFail({ id: params.personId }, [
+                "availabilities.day"
+            ])
+        ).availabilities;
+
+        params.availabilities = params.availabilities.filter(x => {
+            const start = dayjs(x.start, "HH:mm");
+            const end = dayjs(x.end, "HH:mm");
+            const overlaps = existingAvailabilities.getItems().some(y => {
+                const bStart = dayjs(y.day.start, "HH:mm");
+                const bEnd = dayjs(y.day.end, "HH:mm");
+                const res =
+                    x.day === y.day.day &&
+                    !(
+                        end.isSameOrBefore(bStart, "minute") ||
+                        start.isSameOrAfter(bEnd, "minute")
+                    );
+                return res;
+            });
+            return !overlaps;
+        });
+
         const availabilities = [] as Availability[];
         for (const i of params.availabilities) {
             const item = new Availability({
@@ -87,12 +106,17 @@ export default class PersonService extends BaseService<Person> {
             availabilities.push(item);
         }
 
-        await this.availabilityRepo.persistAndFlush(availabilities);
+        if (availabilities.length > 0) {
+            await this.availabilityRepo.persistAndFlush(availabilities);
+        }
 
-        const res = await this.availabilityRepo.find(
-            { id: { $in: availabilities.map(x => x.id) } },
-            ["day"]
-        );
+        const res =
+            availabilities.length > 0
+                ? await this.availabilityRepo.find(
+                      { id: { $in: availabilities.map(x => x.id) } },
+                      ["day"]
+                  )
+                : [];
 
         return res;
     };
@@ -151,6 +175,21 @@ export default class PersonService extends BaseService<Person> {
             item.jobTitle = params.jobTitle as any;
             item.role = params.role;
         } else {
+            const existing = await this.repo.find({
+                firstName:
+                    params.firstName.charAt(0).toUpperCase() +
+                    params.firstName.slice(1).toLowerCase(),
+                lastName:
+                    params.lastName.charAt(0).toUpperCase() +
+                    params.lastName.slice(1).toLowerCase(),
+                phone: params.phone
+            });
+
+            // Person already exists
+            if (existing && existing.length > 0) {
+                return;
+            }
+
             const item = new Person({
                 firstName:
                     params.firstName.charAt(0).toUpperCase() +

@@ -17,7 +17,7 @@ export default class ScheduleController extends BaseHttpController {
 
         return this.json(resp, 200);
     }
-    @Get("/startdates", AuthMiddleware)
+    @Get("/startdates")
     public async getScheduleStartDates() {
         const res = await this.service.getScheduleStartDates();
 
@@ -95,7 +95,7 @@ export default class ScheduleController extends BaseHttpController {
             data.date = dayjs(data.date);
         }
 
-        const res = await this.service.addScheduleRule(data);
+        const res = await this.service.addOrEditScheduleRule(data);
 
         return this.json(res);
     }

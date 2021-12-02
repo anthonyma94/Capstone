@@ -173,12 +173,10 @@
 <script setup lang="ts">
 import { computed, ref } from "@vue/reactivity";
 import { onMounted } from "@vue/runtime-core";
-import dayjs from "dayjs";
 import { watch } from "vue";
 import Button from "./Button.vue";
 import FAIcon from "./FAIcon.vue";
 import Input from "./inputs/Input.vue";
-import Calendar from "primevue/calendar";
 // Prop and prop interface
 interface Props {
   modelValue: { [key: string]: string | number }[];
@@ -342,7 +340,20 @@ const computedData = computed(() => {
 });
 
 const maxPage = computed(() => {
-  return Math.ceil(props.modelValue.length / props.rowsPerPage) || 0;
+  let amount = props.modelValue.length;
+  if (searchRef.value) {
+    const search = new RegExp(searchRef.value, "i");
+    amount = dataRef.value.filter(x => {
+      const keys = Object.keys(x);
+      for (let key of keys) {
+        if (x[key]?.toString().match(search)) {
+          return true;
+        }
+      }
+      return false;
+    }).length;
+  }
+  return Math.ceil(amount / props.rowsPerPage) || 0;
 });
 
 const paginationButtons = computed(() => {

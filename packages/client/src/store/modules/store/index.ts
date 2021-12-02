@@ -30,7 +30,7 @@ export default class StoreModule extends BaseModule<Store> {
     }
 
     get SCHEDULE_IS_DEFAULT() {
-        return this.data.schedule?.default ?? false;
+        return computed(() => this.data.schedule?.default ?? false);
     }
 
     get GET_SCHEDULE_BY_DATE() {
@@ -43,7 +43,6 @@ export default class StoreModule extends BaseModule<Store> {
     get SCHEDULE_START_DATES() {
         return async () => {
             const res = await axios.get("/schedule/startdates");
-
             return res.data.map((item: any) =>
                 dayjs(item)
                     .add(12, "hours")
@@ -106,7 +105,6 @@ export default class StoreModule extends BaseModule<Store> {
     }) {
         await updateServer(this.context.commit, async () => {
             const res = await axios.post("/schedule/item", payload);
-            console.log(res);
             if (!this.data.schedule) {
                 this.data.schedule = {
                     data: []
@@ -135,11 +133,11 @@ export default class StoreModule extends BaseModule<Store> {
 
     @Action
     async SET_DEFAULT_SCHEDULE(date: Date) {
-        console.log(date);
         await updateServer(this.context.commit, async () => {
             await axios.post("/schedule/default", {
                 date
             });
+            this.data.schedule.default = true;
         });
     }
 
@@ -164,6 +162,11 @@ export default class StoreModule extends BaseModule<Store> {
             });
             if (resp.data) {
                 this.context.commit(StoreMutationTypes.SET_SCHEDULE, resp.data);
+            } else {
+                this.context.commit(StoreMutationTypes.SET_SCHEDULE, {
+                    data: [],
+                    default: false
+                });
             }
         });
     }
@@ -238,7 +241,6 @@ export default class StoreModule extends BaseModule<Store> {
                 `/store/changehours/${payload.id}`,
                 payload.data
             );
-            console.log(res.data);
 
             this.data.storeHours = res.data;
         });

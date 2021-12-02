@@ -208,7 +208,10 @@ const data = ref<PersonRef>({
 const toast = useToast();
 
 const postalRegex = helpers.regex(/^\w\w\w\s?\w\w\w$/gi);
-const phoneRegex = helpers.regex(/^\+?1?\d{10}$/gi);
+const phoneRegex = (value: any) => {
+  const regex = new RegExp(/^\+?1?\d{10}$/g);
+  return regex.test(value);
+};
 const wage = (value: any) => getDecimalPlaces(parseFloat(value)) <= 2;
 
 const getDecimalPlaces = (value: number) => {
@@ -233,7 +236,7 @@ const rules = {
 
 const showAddAvailability = ref(false);
 
-const v$ = useVuelidate(rules, data, { $autoDirty: true });
+const v$ = useVuelidate(rules, data, { $autoDirty: true, $scope: false });
 
 // Computed
 const isNewPerson = computed(() => route.params.id === "new");
@@ -305,6 +308,7 @@ const provinceOptions = Object.keys(provinceNames).map(key => {
 
 // Methods
 const onSaveClick = async () => {
+  let error = false;
   loadingAddPerson.value = true;
   const res: any = {
     ...data.value,
@@ -318,31 +322,35 @@ const onSaveClick = async () => {
 
   await personModule.EDIT_PERSON(res);
 
-  toast.add({ severity: "info", summary: "Employee updated.", life: 3000 });
-
-  console.log(res);
-
   if (isNewPerson.value) {
     let newPerson;
-    // for (let i = 0; i < 100; i++) {
     const person = personModule.GET_ALL.value.find(
       x =>
-        x.firstName === res.firstName &&
-        x.lastName === res.lastName &&
+        x.firstName.toLowerCase() === res.firstName &&
+        x.lastName.toLowerCase() === res.lastName &&
         x.phone === res.phone
     );
     if (person) {
       newPerson = person;
-      // break;
     }
-    // }
 
     if (newPerson) {
       const id = newPerson.id;
       window.location.href = `/employees/${id}`;
     } else {
       console.log("No new person found.");
+      error = true;
     }
+  }
+  if (error) {
+    toast.add({
+      severity: "error",
+      summary: "An error occured.",
+      detail: "This employee already exists.",
+      life: 3000
+    });
+  } else {
+    toast.add({ severity: "info", summary: "Employee updated.", life: 3000 });
   }
   loadingAddPerson.value = false;
 };
@@ -378,26 +386,17 @@ watch(
   }
 );
 
+// Update availabilities when it changes
+watch(
+  () => personModule.GET_BY_ID(route.params.id as string).value?.availabilities,
+  newVal => {
+    data.value.availabilities = newVal || [];
+  }
+);
+
 onMounted(() => {
   if (!isNewPerson.value) {
     initPersonData();
-  }
-  if (isNewPerson.value) {
-    data.value = {
-      id: "",
-      firstName: "test",
-      lastName: "test",
-      address: "8521 Fusce Rd.",
-      city: "Mount Pearl",
-      province: "NB",
-      postal: "A8P 5P8",
-      role: "PT",
-      pay: (17.16).toString(),
-      phone: "5750306830",
-      maxWeeklyHours: (11).toString(),
-      jobTitle: "930b2118-4ece-4bdb-9fa8-489b4c0a71ca",
-      availabilities: []
-    };
   }
 });
 </script>

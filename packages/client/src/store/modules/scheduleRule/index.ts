@@ -4,7 +4,6 @@ import { computed, ComputedRef } from "vue-demi";
 import { Action, Module } from "vuex-module-decorators";
 import BaseModule, { updateServer } from "../BaseModule";
 import { ScheduleRule } from "./types";
-import { Dayjs } from "dayjs";
 
 @Module({ namespaced: true, name: "scheduleRule" })
 export default class ScheduleRuleModule extends BaseModule<ScheduleRule> {
@@ -14,7 +13,6 @@ export default class ScheduleRuleModule extends BaseModule<ScheduleRule> {
         id: string
     ) => ComputedRef<ScheduleRule | undefined> {
         return id => computed(() => this.data.find(x => x.id === id));
-        // throw new Error("Method not implemented.");
     }
 
     get GET_BY_DAY() {
@@ -35,15 +33,24 @@ export default class ScheduleRuleModule extends BaseModule<ScheduleRule> {
 
     @Action
     async ADD_SCHEDULE_RULE(params: {
+        id?: string;
         days: number[];
         date?: Date;
         start: Date;
         end: Date;
-        employees: { jobId: string; amount: number }[];
+        employees: { jobId: string; amount: number; id?: string }[];
     }) {
         await updateServer(this.context.commit, async () => {
             const res = await axios.post("/schedule/rules", params);
 
+            if (params.id) {
+                const index = this.data.findIndex(x => x.id === params.id);
+                const resIndex = res.data.findIndex(
+                    (x: any) => x.id === params.id
+                );
+                const original = res.data.splice(resIndex, 1);
+                this.data[index] = original[0];
+            }
             this.data.push(...res.data);
         });
     }

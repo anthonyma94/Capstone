@@ -242,69 +242,139 @@ export default class ScheduleService extends BaseService<Schedule> {
         await this.scheduler.createSchedule(scheduleStart);
     };
 
-    public addScheduleRule = async (params: {
+    public addOrEditScheduleRule = async (params: {
+        id?: string;
         days: number[];
         date?: Dayjs;
         start: Dayjs;
         end: Dayjs;
-        employees: { jobId: string; amount: number }[];
+        employees: { jobId: string; amount: number; id?: string }[];
     }) => {
-        const scheduleRules = [] as ScheduleRule[];
-        const ruleItems = [] as ScheduleRuleItem[];
-        const dayItems = [] as DayItem[];
-        if (params.days.length > 0) {
-            for (const day of params.days) {
+        if (!params.id) {
+            const scheduleRules = [] as ScheduleRule[];
+            const ruleItems = [] as ScheduleRuleItem[];
+            const dayItems = [] as DayItem[];
+            if (params.days.length > 0) {
+                for (const day of params.days) {
+                    const dayItem = new DayItem({
+                        start: params.start.format("HH:mm"),
+                        end: params.end.format("HH:mm"),
+                        day
+                    });
+                    dayItems.push(dayItem);
+                }
+            } else if (params.date) {
                 const dayItem = new DayItem({
                     start: params.start.format("HH:mm"),
                     end: params.end.format("HH:mm"),
-                    day
+                    date: params.date.toDate()
                 });
                 dayItems.push(dayItem);
+            } else throw new Error("Missing weekdays and date");
+
+            for (const dayItem of dayItems) {
+                const scheduleRule = new ScheduleRule({ day: dayItem });
+                scheduleRules.push(scheduleRule);
             }
-        } else if (params.date) {
-            const dayItem = new DayItem({
-                start: params.start.format("HH:mm"),
-                end: params.end.format("HH:mm"),
-                date: params.date.toDate()
-            });
-            dayItems.push(dayItem);
-        } else throw new Error("Missing weekdays and date");
 
-        for (const dayItem of dayItems) {
-            const scheduleRule = new ScheduleRule({ day: dayItem });
-            scheduleRules.push(scheduleRule);
-        }
+            for (const scheduleRule of scheduleRules) {
+                for (const emp of params.employees) {
+                    const ruleItem = new ScheduleRuleItem({
+                        scheduleRule,
+                        jobTitle: emp.jobId,
+                        amount: emp.amount
+                    } as any);
+                    ruleItems.push(ruleItem);
+                    scheduleRule.rules.add(ruleItem);
+                }
+            }
 
-        for (const scheduleRule of scheduleRules) {
+            await this.scheduleRuleItemRepo.persistAndFlush(ruleItems);
+            await this.scheduleRuleRepo.persistAndFlush(scheduleRules);
+
+            const res = await this.scheduleRuleRepo.find(
+                {
+                    $or: scheduleRules.map(item => {
+                        return {
+                            id: item.id
+                        };
+                    })
+                },
+                {
+                    populate: ["rules.jobTitle", "day"]
+                }
+            );
+            return res;
+        } else {
+            const scheduleRules = [] as ScheduleRule[];
+            const rule = await this.scheduleRuleRepo.findOneOrFail(
+                { id: params.id },
+                ["day", "rules.jobTitle"]
+            );
+            scheduleRules.push(rule);
+
+            // Day may be potentially changed, but nothing added or removed
+            if (params.days.length === 1) {
+                rule.day.day = params.days[0];
+            }
+            // More days were added
+            else if (params.days.length > 1) {
+                params.days = params.days.filter(x => x !== rule.day.day);
+                for (const day of params.days) {
+                    const newRule = new ScheduleRule({
+                        day: new DayItem({
+                            start: params.start.format("HH:mm"),
+                            end: params.end.format("HH:mm"),
+                            day
+                        })
+                    });
+                    this.scheduleRuleRepo.persist(newRule);
+                    scheduleRules.push(newRule);
+                    for (const emp of params.employees) {
+                        const item = new ScheduleRuleItem({
+                            scheduleRule: newRule,
+                            jobTitle: emp.jobId as any,
+                            amount: emp.amount
+                        });
+                        this.scheduleRuleItemRepo.persist(item);
+                    }
+                }
+                await this.scheduleRuleRepo.flush();
+                await this.scheduleRuleItemRepo.flush();
+            }
+
+            // Date may be changed
+            if (params.date) {
+                rule.day.date = params.date.toDate();
+            }
+
             for (const emp of params.employees) {
-                const ruleItem = new ScheduleRuleItem({
-                    scheduleRule,
-                    jobTitle: emp.jobId,
-                    amount: emp.amount
-                } as any);
-                ruleItems.push(ruleItem);
-                scheduleRule.rules.add(ruleItem);
+                if (emp.id) {
+                    const item = await this.scheduleRuleItemRepo.findOneOrFail({
+                        id: emp.id
+                    });
+                    item.jobTitle = emp.jobId as any;
+                    item.amount = emp.amount;
+                }
             }
+
+            await this.scheduleRuleRepo.flush();
+            await this.scheduleRuleItemRepo.flush();
+
+            const res = await this.scheduleRuleRepo.find(
+                {
+                    $or: scheduleRules.map(item => {
+                        return {
+                            id: item.id
+                        };
+                    })
+                },
+                {
+                    populate: ["rules.jobTitle", "day"]
+                }
+            );
+            return res;
         }
-
-        await this.scheduleRuleItemRepo.persistAndFlush(ruleItems);
-        await this.scheduleRuleRepo.persistAndFlush(scheduleRules);
-
-        const res = await this.scheduleRuleRepo.find(
-            {
-                $or: scheduleRules.map(item => {
-                    return {
-                        id: item.id
-                    };
-                })
-            },
-            {
-                populate: ["rules.jobTitle", "day"]
-            }
-        );
-
-        console.log(res);
-        return res;
     };
 
     public deleteScheduleRule = async (id: string) => {

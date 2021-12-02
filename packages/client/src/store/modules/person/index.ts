@@ -4,7 +4,6 @@ import { computed } from "vue";
 import { Action, Module, Mutation } from "vuex-module-decorators";
 import BaseModule, { updateServer } from "../BaseModule";
 import { Person, PersonActionTypes } from "./types";
-import { Dayjs } from "dayjs";
 
 @Module({ namespaced: true, name: "person" })
 export default class PersonModule extends BaseModule<Person> {
@@ -61,13 +60,13 @@ export default class PersonModule extends BaseModule<Person> {
                 `/person/${params.personId}/availability`,
                 params.availabilities
             );
-            console.log(res.data);
 
-            const personIndex = this.data.findIndex(
-                x => x.id === params.personId
-            )!;
-            this.data[personIndex].availabilities.push(...res.data);
-            // this.context.commit(MutationTypes.UPDATE_DATA, res.data);
+            if (res.data.length > 0) {
+                const personIndex = this.data.findIndex(
+                    x => x.id === params.personId
+                )!;
+                this.data[personIndex].availabilities.push(...res.data);
+            }
         });
     }
 
@@ -76,7 +75,6 @@ export default class PersonModule extends BaseModule<Person> {
         personId: string;
         availability: string;
     }) {
-        console.log(params.availability);
         await updateServer(this.context.commit, async () => {
             const { personId, availability } = params;
             await axios.delete(
@@ -132,7 +130,7 @@ export default class PersonModule extends BaseModule<Person> {
         await updateServer(this.context.commit, async () => {
             const res = await axios.put(`/person/${params.id}`, params);
 
-            if (params.id !== "new") {
+            if (params.id !== "new" && res.data) {
                 const personIndex = this.data.findIndex(
                     x => x.id === params.id
                 );
@@ -140,7 +138,6 @@ export default class PersonModule extends BaseModule<Person> {
             } else {
                 this.data.push(res.data);
             }
-            // console.log(res.data);
         });
     }
 }

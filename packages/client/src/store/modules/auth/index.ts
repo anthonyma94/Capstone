@@ -34,7 +34,7 @@ export default class AuthModule extends BaseModule<Auth> {
     }
 
     get IS_ADMIN() {
-        return this.data?.role === "admin";
+        return this.data?.role !== "user";
     }
 
     @Mutation

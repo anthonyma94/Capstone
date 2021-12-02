@@ -89,6 +89,9 @@
           >Save</Button
         >
         <Button class="btn-outline-danger" @click="resetForm">Cancel</Button>
+        <div class="flex-grow w-full flex justify-content-end" v-if="!!id">
+          <Button class="btn-danger" @click="handleDelete">Delete</Button>
+        </div>
       </div>
     </template>
   </Dialog>
@@ -113,6 +116,7 @@ import ScheduleRuleModule from "@/store/modules/scheduleRule";
 
 const props = defineProps<{
   visible: boolean;
+  id?: string;
 }>();
 
 const emits = defineEmits<{
@@ -139,10 +143,12 @@ const formData = ref({
   end: undefined as Date | undefined,
   employees: [
     {
+      id: "",
       jobId: "",
       amount: ""
     }
   ] as {
+    id?: string;
     jobId: string;
     amount: string;
   }[]
@@ -190,14 +196,19 @@ const jobTitleOptions = computed(() =>
 );
 
 // Methods
+const handleDelete = async () => {
+  await ruleModule.DELETE_SCHEDULE_RULE(props.id!);
+  resetForm();
+};
 
 const handleSubmit = async () => {
   const data: {
+    id?: string;
     days: number[];
     date?: Date;
     start: Date;
     end: Date;
-    employees: { jobId: string; amount: number }[];
+    employees: { id?: string; jobId: string; amount: number }[];
   } = {
     start: formData.value.start!,
     end: formData.value.end!,
@@ -213,7 +224,9 @@ const handleSubmit = async () => {
       })
   };
 
-  console.log(data);
+  if (props.id) {
+    data.id = props.id;
+  }
 
   await ruleModule.ADD_SCHEDULE_RULE(data);
 
@@ -246,8 +259,40 @@ const addEmpDataRow = () => {
 };
 
 // Watchers
-watch(internalVisible, () => {
-  emits("update:visible", internalVisible.value);
+watch(internalVisible, newVal => {
+  emits("update:visible", newVal);
+  if (newVal) {
+    if (props.id) {
+      const rule = ruleModule.GET_BY_ID(props.id).value;
+      if (rule) {
+        const days =
+          rule.day.day !== undefined && rule.day.day !== null
+            ? [rule.day.day]
+            : [];
+        const date = rule.day.date ? new Date(rule.day.date) : undefined;
+        const start = dayjs(rule.day.start, "HH:mm").toDate();
+        const end = dayjs(rule.day.end, "HH:mm").toDate();
+        const employees = rule.rules.map(item => {
+          return {
+            id: item.id,
+            jobId: item.jobTitle.id,
+            amount: item.amount.toString()
+          };
+        });
+        formData.value = {
+          days,
+          date,
+          start,
+          end,
+          employees
+        };
+        type.value = days.length > 0 ? "recurring" : "one-time";
+        rowsOfEmp.value = employees.length;
+      }
+    }
+  } else {
+    resetForm();
+  }
 });
 watch(
   () => props.visible,
@@ -265,5 +310,38 @@ watch(
     }
   }
 );
+// watch(
+//   () => props.id,
+//   newVal => {
+//     if (newVal) {
+//       const rule = ruleModule.GET_BY_ID(newVal).value;
+//       if (rule) {
+//         const days =
+//           rule.day.day !== undefined && rule.day.day !== null
+//             ? [rule.day.day]
+//             : [];
+//         const date = rule.day.date ? new Date(rule.day.date) : undefined;
+//         const start = dayjs(rule.day.start, "HH:mm").toDate();
+//         const end = dayjs(rule.day.end, "HH:mm").toDate();
+//         const employees = rule.rules.map(item => {
+//           return {
+//             id: item.id,
+//             jobId: item.jobTitle.id,
+//             amount: item.amount.toString()
+//           };
+//         });
+//         formData.value = {
+//           days,
+//           date,
+//           start,
+//           end,
+//           employees
+//         };
+//         type.value = days.length > 0 ? "recurring" : "one-time";
+//         rowsOfEmp.value = employees.length;
+//       }
+//     }
+//   }
+// );
 </script>
 <style scoped lang="postcss"></style>

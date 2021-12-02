@@ -4,7 +4,7 @@
       <div class="flex gap-3" v-if="!editable && authModule.IS_ADMIN">
         <Button
           @click="showDefaultScheduleModal = true"
-          :disabled="storeModule.SCHEDULE_IS_DEFAULT"
+          :disabled="isDefaultSchedule"
           >Set Schedule as Default</Button
         >
         <Button @click="editable = true">Edit Schedule</Button>
@@ -15,9 +15,7 @@
       </div>
     </div>
     <div class="my-3">
-      <span
-        v-if="storeModule.SCHEDULE_IS_DEFAULT"
-        class="text-lg opacity-60 font-bold"
+      <span v-if="isDefaultSchedule" class="text-lg opacity-60 font-bold"
         >Default Schedule</span
       >
       <Calendar
@@ -123,6 +121,7 @@ const minDate = computed(() => {
   date.setDate(date.getDate() + (dayOfWeek % 7) || 7);
   return date;
 });
+const isDefaultSchedule = computed(() => storeModule.SCHEDULE_IS_DEFAULT.value);
 
 // Methods
 const handleCalendarPickerUpdate = (e: [Date, Date | undefined]) => {
@@ -136,7 +135,6 @@ const handleCalendarPickerUpdate = (e: [Date, Date | undefined]) => {
 
 const disabledGenerateDates = asyncComputed(async () => {
   const res = await storeModule.SCHEDULE_START_DATES();
-  console.log(res);
   return res;
 }, []);
 

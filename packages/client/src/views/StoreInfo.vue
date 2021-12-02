@@ -1,5 +1,6 @@
 <template>
   <div>
+    <Toast />
     <div class="flex justify-around gap-4">
       <div class="w-64">
         <h1>Store Name</h1>
@@ -14,12 +15,7 @@
             class="flex-grow-0"
             v-if="authModule.IS_ADMIN"
             :disabled="v$.storeName.$invalid"
-            @click="
-              storeModule.CHANGE_NAME({
-                id: storeModule.GET_ALL.value.id,
-                name: storeName
-              })
-            "
+            @click="handleStoreNameChange"
           >
             Save
           </Button>
@@ -71,17 +67,26 @@
     <div v-if="authModule.IS_ADMIN">
       <hr />
       <h1>Shift Scheduling Rules</h1>
-      <AddShiftSchedulingModal v-model:visible="toggles.addShiftSchedule" />
+      <ShiftSchedulingModal
+        v-model:visible="toggles.showShiftSchedule"
+        :id="selectedScheduleRuleId"
+      />
       <DataTable
         v-model="scheduleRuleData"
         :cols="scheduleRuleTitleCols"
         :editable="false"
+        :deletable="false"
+        :selectable-row="true"
+        @row-select="handleShiftRowSelect"
       >
         <template #toolbar>
           <Toolbar class="w-full mr-4">
             <template #left>
               <Button
-                @click="toggles.addShiftSchedule = !toggles.addShiftSchedule"
+                @click="
+                  toggles.showShiftSchedule = !toggles.showShiftSchedule;
+                  selectedScheduleRuleId = '';
+                "
               >
                 Add
               </Button>
@@ -127,6 +132,7 @@
                       jobModule.ADD_TITLE(newJobTitle);
                       newJobTitle = '';
                       v$.newJobTitle.$reset();
+                      toggles.addJob = false;
                     }
                   "
                   :disabled="v$.newJobTitle.$invalid"
@@ -155,7 +161,7 @@ import StoreModule from "@/store/modules/store";
 import { useStore } from "@/store";
 import JobTitleModule from "@/store/modules/jobTitle";
 import ScheduleRuleModule from "@/store/modules/scheduleRule";
-import AddShiftSchedulingModal from "@/components/dialogs/AddShiftSchedulingModal.vue";
+import ShiftSchedulingModal from "@/components/dialogs/ShiftSchedulingModal.vue";
 import dayjs, { Dayjs } from "dayjs";
 import AuthModule from "@/store/modules/auth";
 import { convertTo12Hour, localecompareDaynames } from "@/services/dates";
@@ -163,6 +169,8 @@ import Calendar from "primevue/calendar";
 import PersonModule from "@/store/modules/person";
 import Toolbar from "primevue/toolbar";
 import InputText from "primevue/inputtext";
+import Toast from "primevue/toast";
+import { useToast } from "primevue/usetoast";
 
 // Use hooks
 
@@ -171,11 +179,13 @@ const jobModule = getModule(JobTitleModule, useStore());
 const scheduleRuleModule = getModule(ScheduleRuleModule, useStore());
 const authModule = getModule(AuthModule, useStore());
 const personModule = getModule(PersonModule, useStore());
+const toast = useToast();
 
 // Data
 const storeName = ref("");
 const newJobTitle = ref("");
-const selectedJobTitles = ref();
+const selectedScheduleRuleId = ref("");
+
 const storeHours = ref<{ start?: Date; end?: Date; id?: string }[]>(
   [...Array(7).keys()].map(_ => {
     return {
@@ -187,7 +197,7 @@ const storeHours = ref<{ start?: Date; end?: Date; id?: string }[]>(
 
 const toggles = ref({
   addJob: false,
-  addShiftSchedule: false
+  showShiftSchedule: false
 });
 
 const unique = (value: any) => {
@@ -251,63 +261,52 @@ const scheduleRuleData = computed<
     employees: string;
     billedHours: number;
   }[]
->({
-  get() {
-    if (scheduleRuleModule.GET_ALL.value?.length > 0) {
-      return scheduleRuleModule.GET_ALL.value.map(item => {
-        let start: Dayjs;
-        let end: Dayjs;
-        if (item.day.day !== undefined && item.day.day !== null) {
-          start = dayjs(item.day.start, "HH:mm");
-          end = dayjs(item.day.end, "HH:mm");
-        } else if (item.day.date) {
-          start = dayjs(
-            `${item.day.date} ${item.day.start}`,
-            "YYYY-MM-DD HH:mm"
-          );
-          end = dayjs(`${item.day.date} ${item.day.end}`, "YYYY-MM-DD HH:mm");
-        } else throw new Error("Missing weekday and date.");
-        const duration = end.diff(start, "hour", true);
-        const emps = item.rules.reduce((acc, cur) => {
-          if (!(cur.jobTitle.name in acc)) {
-            acc[cur.jobTitle.name] = cur.amount;
-          } else {
-            acc[cur.jobTitle.name] += cur.amount;
-          }
-          acc.total = acc.total ? acc.total + cur.amount : cur.amount;
-          return acc;
-        }, {} as any);
-        return {
-          id: item.id,
-          day: item.day.day
+>(() => {
+  if (scheduleRuleModule.GET_ALL.value?.length > 0) {
+    return scheduleRuleModule.GET_ALL.value.map(item => {
+      let start: Dayjs;
+      let end: Dayjs;
+      if (item.day.day !== undefined && item.day.day !== null) {
+        start = dayjs(item.day.start, "HH:mm");
+        end = dayjs(item.day.end, "HH:mm");
+      } else if (item.day.date) {
+        start = dayjs(`${item.day.date} ${item.day.start}`, "YYYY-MM-DD HH:mm");
+        end = dayjs(`${item.day.date} ${item.day.end}`, "YYYY-MM-DD HH:mm");
+      } else throw new Error("Missing weekday and date.");
+      const duration = end.diff(start, "hour", true);
+      const emps = item.rules.reduce((acc, cur) => {
+        if (!(cur.jobTitle.name in acc)) {
+          acc[cur.jobTitle.name] = cur.amount;
+        } else {
+          acc[cur.jobTitle.name] += cur.amount;
+        }
+        acc.total = acc.total ? acc.total + cur.amount : cur.amount;
+        return acc;
+      }, {} as any);
+      return {
+        id: item.id,
+        day:
+          item.day.day !== undefined && item.day.day !== null
             ? dayNames[item.day.day]
             : start.format("MMM DD, YYYY"),
-          start: convertTo12Hour(item.day.start),
-          end: convertTo12Hour(item.day.end),
-          employees: Object.keys(emps)
-            .sort((a, b) => {
-              if (a.toLowerCase() === "total") {
-                return 1;
-              } else if (b.toLowerCase() === "total") {
-                return -1;
-              } else return a.localeCompare(b);
-            })
-            .map(key => `${key.pascalToWords()}: ${emps[key]}`)
-            .join("\n"),
-          billedHours:
-            item.rules.reduce((acc, cur) => acc + cur.amount, 0) * duration
-        };
-      });
-    }
-    return [];
-  },
-  async set(newVal) {
-    const mapped = newVal.map(x => x.id);
-    const deletedItem = scheduleRuleModule.GET_ALL.value.find(
-      x => !mapped.includes(x.id)
-    )!;
-    await scheduleRuleModule.DELETE_SCHEDULE_RULE(deletedItem?.id);
+        start: convertTo12Hour(item.day.start),
+        end: convertTo12Hour(item.day.end),
+        employees: Object.keys(emps)
+          .sort((a, b) => {
+            if (a.toLowerCase() === "total") {
+              return 1;
+            } else if (b.toLowerCase() === "total") {
+              return -1;
+            } else return a.localeCompare(b);
+          })
+          .map(key => `${key.pascalToWords()}: ${emps[key]}`)
+          .join("\n"),
+        billedHours:
+          item.rules.reduce((acc, cur) => acc + cur.amount, 0) * duration
+      };
+    });
   }
+  return [];
 });
 
 const computedJobTitle = computed<
@@ -348,6 +347,11 @@ const checkJobTitleDeletable = (e: any) => {
   return res;
 };
 
+const handleShiftRowSelect = (e: any) => {
+  toggles.value.showShiftSchedule = true;
+  selectedScheduleRuleId.value = e;
+};
+
 const handleHourChange = async () => {
   const data = storeHours.value
     .filter(item => {
@@ -380,13 +384,20 @@ const handleHourChange = async () => {
       };
     });
   await storeModule.CHANGE_HOURS({ id: storeModule.GET_ALL.value.id, data });
+  toast.add({ severity: "info", summary: "Store hours changed.", life: 3000 });
+  toast.add({
+    severity: "warn",
+    summary: "Warning",
+    detail: "Please change any corresponding shift rules as well."
+  });
 };
 
-const onDelete = () => {
-  const ids = selectedJobTitles.value.map((i: any) => i.id);
-  ids.forEach((i: string) => {
-    jobModule.DELETE_DATA(i);
+const handleStoreNameChange = async () => {
+  await storeModule.CHANGE_NAME({
+    id: storeModule.GET_ALL.value.id,
+    name: storeName.value
   });
+  toast.add({ severity: "info", summary: "Store name changed.", life: 3000 });
 };
 
 const initStoreHours = () => {

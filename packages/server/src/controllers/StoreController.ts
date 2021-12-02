@@ -1,14 +1,10 @@
 import dayjs from "dayjs";
 import { NextFunction, Request, Response } from "express";
 import { inject } from "inversify";
-import DayItem, { DayNames } from "../entities/DayItem";
 import Store from "../entities/Store";
-import StoreHour from "../entities/StoreHour";
 import AuthMiddleware from "../middleware/AuthMiddleware";
-import DayItemService from "../services/DayItemService";
-import StoreHourService from "../services/StoreHourService";
 import { StoreService } from "../services/StoreService";
-import { Controller, Get, Post, Put } from "../utils/decorators";
+import { Controller, Post, Put } from "../utils/decorators";
 import { BaseController } from "./BaseController";
 
 @Controller()
@@ -18,18 +14,12 @@ export default class StoreController extends BaseController<
 > {
     constructor(
         @inject(StoreService)
-        service: StoreService,
-
-        @inject(DayItemService)
-        private readonly dayItemService: DayItemService,
-
-        @inject(StoreHourService)
-        private readonly storeHourService: StoreHourService
+        service: StoreService
     ) {
         super(service);
     }
 
-    @Post("/")
+    @Post("/", AuthMiddleware)
     public async add(req: Request, res: Response, next: NextFunction) {
         if (!req.body || !req.body.name) {
             throw new Error("Store must have a name.");
@@ -39,7 +29,7 @@ export default class StoreController extends BaseController<
         return this.json(result, 201);
     }
 
-    @Put("/changename/:id")
+    @Put("/changename/:id", AuthMiddleware)
     public async changeName(req: Request, res: Response, next: NextFunction) {
         if (!req.params.id) {
             throw new Error("Please provide ID.");

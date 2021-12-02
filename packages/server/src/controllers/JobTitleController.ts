@@ -1,6 +1,7 @@
-import { NextFunction, Request, Response } from "express";
+import { Request } from "express";
 import { inject } from "inversify";
 import { JobTitle } from "../entities/JobTitle";
+import AuthMiddleware from "../middleware/AuthMiddleware";
 import JobTitleService from "../services/JobTitleService";
 import { Controller, Post } from "../utils/decorators";
 import { BaseController } from "./BaseController";
@@ -17,8 +18,8 @@ export default class JobTitleController extends BaseController<
         super(service);
     }
 
-    @Post("/")
-    public async add(req: Request, res: Response, next: NextFunction) {
+    @Post("/", AuthMiddleware)
+    public async add(req: Request) {
         if (!req.body || !req.body.name) {
             throw new Error("Store must have a name.");
         }

@@ -8,7 +8,7 @@ import {
 import { computed } from "vue-demi";
 import { Action, Module } from "vuex-module-decorators";
 import BaseModule, { updateServer } from "../BaseModule";
-import { JobTitle, JobTitleActionTypes, JobTitleGetterTypes } from "./types";
+import { JobTitle, JobTitleActionTypes } from "./types";
 
 @Module({ namespaced: true, name: "jobTitle" })
 export default class JobTitleModule extends BaseModule<JobTitle> {

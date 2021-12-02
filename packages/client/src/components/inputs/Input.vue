@@ -110,6 +110,10 @@ const onBlur = (e: FocusEvent) => {
   if (!(target === wrapper.value || wrapper.value.contains(target))) {
     isInFocus.value = false;
   }
+
+  if (typeof props.modelValue === "string") {
+    emit("update:modelValue", props.modelValue.trim());
+  }
 };
 const onFocus = (e: FocusEvent) => {
   isInFocus.value = true;

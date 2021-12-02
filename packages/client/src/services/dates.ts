@@ -5,12 +5,16 @@ import tz from "dayjs/plugin/timezone";
 import isBetween from "dayjs/plugin/isBetween";
 import dayNames from "@/assets/dayNames";
 import monthNames from "@/assets/monthNames";
+import before from "dayjs/plugin/isSameOrBefore";
+import after from "dayjs/plugin/isSameOrAfter";
 
 function register() {
     dayjs.extend(customParse);
     dayjs.extend(utc);
     dayjs.extend(tz);
     dayjs.extend(isBetween);
+    dayjs.extend(before);
+    dayjs.extend(after);
 }
 
 export function convertTo12Hour(time: string) {

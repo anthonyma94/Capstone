@@ -4,12 +4,10 @@ import {
     FilterQuery,
     FindOptions,
     QueryOrderMap,
-    wrap,
-    Primary
+    wrap
 } from "@mikro-orm/core";
 import { injectable } from "inversify";
 import BaseEntity from "../entities/BaseEntity";
-import util from "util";
 
 @injectable()
 export abstract class BaseService<T extends BaseEntity> {
@@ -55,8 +53,6 @@ export abstract class BaseService<T extends BaseEntity> {
             updateNestedEntities: true
         });
         await this.repo.flush();
-        // console.log(util.inspect(item, { depth: null, colors: true }));
-        // console.log(item);
         return item;
     };
 

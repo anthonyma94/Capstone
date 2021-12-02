@@ -1,6 +1,5 @@
 import { Collection, ManyToOne, OneToMany, Property } from "@mikro-orm/core";
-import { inject, injectable } from "inversify";
-import JobTitleService from "../services/JobTitleService";
+import { injectable } from "inversify";
 import { Entity } from "../utils/decorators";
 import Availability from "./Availability";
 import BaseEntity from "./BaseEntity";
