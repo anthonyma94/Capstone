@@ -16,7 +16,7 @@ exports.default = {
     metadataProvider: reflection_1.TsMorphMetadataProvider
 };
 class TimeType extends core_1.Type {
-    convertToDatabaseValue(value, platform) {
+    convertToDatabaseValue(value) {
         const regex = new RegExp(/^\d{1,2}:\d{1,2}(:\d{1,2})?$/g);
         const match = regex.exec(value);
         if (match) {
@@ -29,7 +29,7 @@ class TimeType extends core_1.Type {
             throw new core_1.ValidationError(`${value} is not a valid time.`);
         }
     }
-    convertToJSValue(value, platform) {
+    convertToJSValue(value) {
         return value.replace(/:\d{1,2}$/g, "");
     }
     getColumnType() {

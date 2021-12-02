@@ -18,7 +18,6 @@ var ScheduleService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 const EntityRepository_1 = require("@mikro-orm/core/entity/EntityRepository");
 const dayjs_1 = __importDefault(require("dayjs"));
-const dayjs_2 = __importDefault(require("dayjs"));
 const inversify_binding_decorators_1 = require("inversify-binding-decorators");
 const Schedule_1 = __importDefault(require("../entities/Schedule"));
 const ScheduleRule_1 = __importDefault(require("../entities/ScheduleRule"));
@@ -27,7 +26,6 @@ const BaseService_1 = require("./BaseService");
 const DayItem_1 = __importDefault(require("../entities/DayItem"));
 const Person_1 = require("../entities/Person");
 const ScheduleItem_1 = __importDefault(require("../entities/ScheduleItem"));
-const TimeOff_1 = __importDefault(require("../entities/TimeOff"));
 const inversify_1 = require("inversify");
 const scheduler_1 = __importDefault(require("../utils/scheduler"));
 const ScheduleRuleItem_1 = __importDefault(require("../entities/ScheduleRuleItem"));
@@ -36,17 +34,14 @@ let ScheduleService = ScheduleService_1 = class ScheduleService extends BaseServ
     scheduleRuleItemRepo;
     scheduleItemRepo;
     personRepo;
-    timeoffRepo;
     scheduler;
-    constructor(repo, scheduleRuleRepo, scheduleRuleItemRepo, scheduleItemRepo, personRepo, timeoffRepo, scheduler) {
+    constructor(repo, scheduleRuleRepo, scheduleRuleItemRepo, scheduleItemRepo, personRepo, scheduler) {
         super(repo);
         this.scheduleRuleRepo = scheduleRuleRepo;
         this.scheduleRuleItemRepo = scheduleRuleItemRepo;
         this.scheduleItemRepo = scheduleItemRepo;
         this.personRepo = personRepo;
-        this.timeoffRepo = timeoffRepo;
         this.scheduler = scheduler;
-        dayjs_1.default.extend(dayjs_2.default);
     }
     scheduleItemToEvent = async (item) => {
         if (!item.person.jobTitle || !item.person.jobTitle.name) {
@@ -54,19 +49,17 @@ let ScheduleService = ScheduleService_1 = class ScheduleService extends BaseServ
                 "jobTitle"
             ])).jobTitle;
         }
+        const start = (0, dayjs_1.default)(`${(0, dayjs_1.default)(item.day.date)
+            .utc()
+            .format("YYYY-MM-DD")} ${item.day.start}`, "YYYY-MM-DD HH:mm");
+        const end = (0, dayjs_1.default)(`${(0, dayjs_1.default)(item.day.date)
+            .utc()
+            .format("YYYY-MM-DD")} ${item.day.end}`, "YYYY-MM-DD HH:mm");
         const res = {
             id: item.id,
-            start: (0, dayjs_1.default)(`${(0, dayjs_1.default)(item.day.date)
-                .utc()
-                .format("YYYY-MM-DD")} ${item.day.start}`, "YYYY-MM-DD HH:mm")
-                .utc()
-                .toDate(),
-            end: (0, dayjs_1.default)(`${(0, dayjs_1.default)(item.day.date)
-                .utc()
-                .format("YYYY-MM-DD")} ${item.day.end}`, "YYYY-MM-DD HH:mm")
-                .utc()
-                .toDate(),
-            title: `${item.day.start}-${item.day.end}`,
+            start: start.toDate(),
+            end: end.toDate(),
+            title: `${start.format("hh:mm A")} - ${end.format("hh:mm A")}`,
             resourceId: item.person.id,
             extendedProps: {
                 job: item.person.jobTitle.name,
@@ -119,7 +112,7 @@ let ScheduleService = ScheduleService_1 = class ScheduleService extends BaseServ
             person: params.personId
         });
         await this.scheduleItemRepo.persistAndFlush(item);
-        return this.scheduleItemToEvent(item);
+        return await this.scheduleItemToEvent(item);
     };
     getSchedule = async (start, user) => {
         const where = {
@@ -142,26 +135,7 @@ let ScheduleService = ScheduleService_1 = class ScheduleService extends BaseServ
         }
         const response = [];
         for (const item of scheduleResp.scheduleItems) {
-            response.push({
-                id: item.id,
-                start: (0, dayjs_1.default)(`${(0, dayjs_1.default)(item.day.date)
-                    .utc()
-                    .format("YYYY-MM-DD")} ${item.day.start}`, "YYYY-MM-DD HH:mm")
-                    .utc()
-                    .toDate(),
-                end: (0, dayjs_1.default)(`${(0, dayjs_1.default)(item.day.date)
-                    .utc()
-                    .format("YYYY-MM-DD")} ${item.day.end}`, "YYYY-MM-DD HH:mm")
-                    .utc()
-                    .toDate(),
-                title: `${item.day.start}-${item.day.end}`,
-                resourceId: item.person.id,
-                extendedProps: {
-                    job: item.person.jobTitle.name,
-                    name: item.person.firstName + " " + item.person.lastName,
-                    schedule: scheduleResp.id
-                }
-            });
+            response.push(await this.scheduleItemToEvent(item));
         }
         return { data: response, default: scheduleResp.isDefault };
     };
@@ -332,10 +306,8 @@ ScheduleService = ScheduleService_1 = __decorate([
     __param(2, (0, decorators_1.InjectRepo)(ScheduleRuleItem_1.default)),
     __param(3, (0, decorators_1.InjectRepo)(ScheduleItem_1.default)),
     __param(4, (0, decorators_1.InjectRepo)(Person_1.Person)),
-    __param(5, (0, decorators_1.InjectRepo)(TimeOff_1.default)),
-    __param(6, (0, inversify_1.inject)(scheduler_1.default)),
+    __param(5, (0, inversify_1.inject)(scheduler_1.default)),
     __metadata("design:paramtypes", [Object, EntityRepository_1.EntityRepository,
-        EntityRepository_1.EntityRepository,
         EntityRepository_1.EntityRepository,
         EntityRepository_1.EntityRepository,
         EntityRepository_1.EntityRepository,

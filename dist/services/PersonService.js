@@ -112,7 +112,7 @@ let PersonService = PersonService_1 = class PersonService extends BaseService_1.
         await this.availabilityRepo.flush();
         return item;
     };
-    updatePerson = async (params) => {
+    addOrUpdatePerson = async (params) => {
         if (params.id !== "new") {
             const item = await this.repo.findOneOrFail({ id: params.id });
             item.firstName = params.firstName;
@@ -153,10 +153,27 @@ let PersonService = PersonService_1 = class PersonService extends BaseService_1.
                 maxWeeklyHours: params.maxWeeklyHours,
                 jobTitle: params.jobTitle
             });
+            let username = item.firstName.charAt(0).toLowerCase() +
+                item.lastName.toLowerCase();
+            let count = 1;
+            try {
+                while (true) {
+                    await this.authRepo.findOneOrFail({ username });
+                    if (isNaN(parseInt(username.charAt(username.length - 1)))) {
+                        username += count.toString();
+                    }
+                    else {
+                        username =
+                            username.slice(0, username.length - 2) +
+                                count.toString();
+                    }
+                    count++;
+                }
+            }
+            catch { }
             const auth = new Authentication_1.default({
                 person: item,
-                username: item.firstName.charAt(0).toLowerCase() +
-                    item.lastName.toLowerCase(),
+                username,
                 password: "password",
                 role: "user"
             });

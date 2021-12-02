@@ -5,7 +5,6 @@ import ScheduleRule from "../entities/ScheduleRule";
 import { BaseService } from "./BaseService";
 import { Person } from "../entities/Person";
 import ScheduleItem from "../entities/ScheduleItem";
-import TimeOff from "../entities/TimeOff";
 import Scheduler from "../utils/scheduler";
 import ScheduleRuleItem from "../entities/ScheduleRuleItem";
 export default class ScheduleService extends BaseService<Schedule> {
@@ -13,9 +12,8 @@ export default class ScheduleService extends BaseService<Schedule> {
     private scheduleRuleItemRepo;
     private scheduleItemRepo;
     private personRepo;
-    private timeoffRepo;
     private scheduler;
-    constructor(repo: any, scheduleRuleRepo: EntityRepository<ScheduleRule>, scheduleRuleItemRepo: EntityRepository<ScheduleRuleItem>, scheduleItemRepo: EntityRepository<ScheduleItem>, personRepo: EntityRepository<Person>, timeoffRepo: EntityRepository<TimeOff>, scheduler: Scheduler);
+    constructor(repo: any, scheduleRuleRepo: EntityRepository<ScheduleRule>, scheduleRuleItemRepo: EntityRepository<ScheduleRuleItem>, scheduleItemRepo: EntityRepository<ScheduleItem>, personRepo: EntityRepository<Person>, scheduler: Scheduler);
     private scheduleItemToEvent;
     getRules: () => Promise<(ScheduleRule & {
         rules: import("@mikro-orm/core").LoadedCollection<ScheduleRuleItem, ScheduleRuleItem & {}>;

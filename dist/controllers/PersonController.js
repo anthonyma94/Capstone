@@ -45,7 +45,7 @@ let PersonController = class PersonController extends BaseController_1.BaseContr
     }
     async updatePerson(req) {
         try {
-            const res = await this.service.updatePerson(req.body);
+            const res = await this.service.addOrUpdatePerson(req.body);
             return this.json(res, 200);
         }
         catch (e) {

@@ -35,13 +35,6 @@ let RequestService = RequestService_1 = class RequestService {
             : await this.timeOffRepo.findAll({ populate: ["start", "end"] });
         return items;
     }
-    async serializeTimeOff(timeoff) {
-        const item = await this.timeOffRepo.findOneOrFail({ id: timeoff }, [
-            "start",
-            "end"
-        ]);
-        return item;
-    }
     async createTimeOffRequest(params) {
         const person = await this.personRepo.findOneOrFail({
             id: params.person
@@ -59,7 +52,11 @@ let RequestService = RequestService_1 = class RequestService {
         const item = new TimeOff_1.default({ person, start, end, reason: params.reason });
         this.timeOffRepo.persist(item);
         await this.timeOffRepo.flush();
-        return this.serializeTimeOff(item.id);
+        const res = await this.timeOffRepo.findOneOrFail({ id: item.id }, [
+            "start",
+            "end"
+        ]);
+        return res;
     }
     async approveOrDenyTimeOffRequest(id, decision) {
         const item = await this.timeOffRepo.findOneOrFail({ id });

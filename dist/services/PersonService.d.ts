@@ -26,7 +26,7 @@ export default class PersonService extends BaseService<Person> {
         end: Dayjs;
         day: number;
     }) => Promise<Availability & {}>;
-    updatePerson: (params: {
+    addOrUpdatePerson: (params: {
         pay: number;
         maxWeeklyHours: number;
         jobTitle: string;

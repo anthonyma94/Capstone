@@ -7,7 +7,6 @@ export default class RequestService {
     private personRepo;
     constructor(timeOffRepo: EntityRepository<TimeOff>, personRepo: EntityRepository<Person>);
     getTimeOffRequest(person?: string): Promise<(TimeOff & {})[]>;
-    serializeTimeOff(timeoff: string): Promise<TimeOff & {}>;
     createTimeOffRequest(params: {
         person: string;
         start: Dayjs;
