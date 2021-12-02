@@ -82,7 +82,7 @@ let ScheduleController = class ScheduleController extends inversify_express_util
         if (data.date) {
             data.date = (0, dayjs_1.default)(data.date);
         }
-        const res = await this.service.addScheduleRule(data);
+        const res = await this.service.addOrEditScheduleRule(data);
         return this.json(res);
     }
     async deleteScheduleRule(req) {
@@ -98,7 +98,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], ScheduleController.prototype, "getRules", null);
 __decorate([
-    (0, decorators_1.Get)("/startdates", AuthMiddleware_1.default),
+    (0, decorators_1.Get)("/startdates"),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)

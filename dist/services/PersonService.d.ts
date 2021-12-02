@@ -39,9 +39,9 @@ export default class PersonService extends BaseService<Person> {
         postal: string;
         city: string;
         phone: string;
-    }) => Promise<Person & {
+    }) => Promise<(Person & {
         scheduleItems: import("@mikro-orm/core").Collection<import("../entities/ScheduleItem").default, unknown>;
         timeOffs: import("@mikro-orm/core").Collection<import("../entities/TimeOff").default, unknown>;
         availabilities: import("@mikro-orm/core").Collection<Availability, unknown>;
-    }>;
+    }) | undefined>;
 }

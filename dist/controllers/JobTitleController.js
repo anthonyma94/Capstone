@@ -17,6 +17,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const JobTitle_1 = require("../entities/JobTitle");
+const AuthMiddleware_1 = __importDefault(require("../middleware/AuthMiddleware"));
 const JobTitleService_1 = __importDefault(require("../services/JobTitleService"));
 const decorators_1 = require("../utils/decorators");
 const BaseController_1 = require("./BaseController");
@@ -24,7 +25,7 @@ let JobTitleController = class JobTitleController extends BaseController_1.BaseC
     constructor(service) {
         super(service);
     }
-    async add(req, res, next) {
+    async add(req) {
         if (!req.body || !req.body.name) {
             throw new Error("Store must have a name.");
         }
@@ -36,9 +37,9 @@ let JobTitleController = class JobTitleController extends BaseController_1.BaseC
     }
 };
 __decorate([
-    (0, decorators_1.Post)("/"),
+    (0, decorators_1.Post)("/", AuthMiddleware_1.default),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object, Function]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], JobTitleController.prototype, "add", null);
 JobTitleController = __decorate([

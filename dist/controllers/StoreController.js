@@ -19,18 +19,12 @@ const dayjs_1 = __importDefault(require("dayjs"));
 const inversify_1 = require("inversify");
 const Store_1 = __importDefault(require("../entities/Store"));
 const AuthMiddleware_1 = __importDefault(require("../middleware/AuthMiddleware"));
-const DayItemService_1 = __importDefault(require("../services/DayItemService"));
-const StoreHourService_1 = __importDefault(require("../services/StoreHourService"));
 const StoreService_1 = require("../services/StoreService");
 const decorators_1 = require("../utils/decorators");
 const BaseController_1 = require("./BaseController");
 let StoreController = class StoreController extends BaseController_1.BaseController {
-    dayItemService;
-    storeHourService;
-    constructor(service, dayItemService, storeHourService) {
+    constructor(service) {
         super(service);
-        this.dayItemService = dayItemService;
-        this.storeHourService = storeHourService;
     }
     async add(req, res, next) {
         if (!req.body || !req.body.name) {
@@ -70,13 +64,13 @@ let StoreController = class StoreController extends BaseController_1.BaseControl
     }
 };
 __decorate([
-    (0, decorators_1.Post)("/"),
+    (0, decorators_1.Post)("/", AuthMiddleware_1.default),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object, Function]),
     __metadata("design:returntype", Promise)
 ], StoreController.prototype, "add", null);
 __decorate([
-    (0, decorators_1.Put)("/changename/:id"),
+    (0, decorators_1.Put)("/changename/:id", AuthMiddleware_1.default),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object, Function]),
     __metadata("design:returntype", Promise)
@@ -90,11 +84,7 @@ __decorate([
 StoreController = __decorate([
     (0, decorators_1.Controller)(),
     __param(0, (0, inversify_1.inject)(StoreService_1.StoreService)),
-    __param(1, (0, inversify_1.inject)(DayItemService_1.default)),
-    __param(2, (0, inversify_1.inject)(StoreHourService_1.default)),
-    __metadata("design:paramtypes", [StoreService_1.StoreService,
-        DayItemService_1.default,
-        StoreHourService_1.default])
+    __metadata("design:paramtypes", [StoreService_1.StoreService])
 ], StoreController);
 exports.default = StoreController;
 //# sourceMappingURL=StoreController.js.map

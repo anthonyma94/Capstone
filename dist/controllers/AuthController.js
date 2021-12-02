@@ -33,30 +33,34 @@ let AuthController = class AuthController extends inversify_express_utils_1.Base
         return this.json(null);
     }
     async login(req, res) {
-        const { username, password } = req.body;
-        if (!username) {
-            throw new Error("Missing username.");
+        try {
+            const { username, password } = req.body;
+            if (!username) {
+                throw new Error("Missing username.");
+            }
+            if (!password) {
+                throw new Error("Missing password.");
+            }
+            const user = await this.repo.findOneOrFail({ username });
+            const passwordValid = Authentication_1.default.checkPassword(password, user.password);
+            if (!passwordValid) {
+                return this.statusCode(403);
+            }
+            const token = (0, jwt_1.generateAccessToken)({
+                user: user.person?.id || username,
+                role: user.role
+            });
+            res.cookie("jwt", token, {
+                httpOnly: true
+            });
+            return this.json({
+                user: username,
+                role: user.role
+            });
         }
-        if (!password) {
-            throw new Error("Missing password.");
+        catch (e) {
+            return this.badRequest();
         }
-        const user = await this.repo.findOneOrFail({ username });
-        const passwordValid = Authentication_1.default.checkPassword(password, user.password);
-        if (!passwordValid) {
-            return this.statusCode(403);
-        }
-        console.log(user.person?.id);
-        const token = (0, jwt_1.generateAccessToken)({
-            user: user.person?.id || username,
-            role: user.role
-        });
-        res.cookie("jwt", token, {
-            httpOnly: true
-        });
-        return this.json({
-            user: username,
-            role: user.role
-        });
     }
     async logout(req, res) {
         res.clearCookie("jwt");

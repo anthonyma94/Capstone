@@ -53,7 +53,8 @@ export default class ScheduleService extends BaseService<Schedule> {
     deleteScheduleItem: (id: string) => Promise<void>;
     setDefaultSchedule: (weekStart: Dayjs) => Promise<void>;
     createSchedule: (scheduleStart: Dayjs) => Promise<void>;
-    addScheduleRule: (params: {
+    addOrEditScheduleRule: (params: {
+        id?: string;
         days: number[];
         date?: Dayjs;
         start: Dayjs;
@@ -61,6 +62,7 @@ export default class ScheduleService extends BaseService<Schedule> {
         employees: {
             jobId: string;
             amount: number;
+            id?: string;
         }[];
     }) => Promise<(ScheduleRule & {
         rules: import("@mikro-orm/core").Collection<ScheduleRuleItem, unknown>;

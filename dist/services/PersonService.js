@@ -23,6 +23,7 @@ const Person_1 = require("../entities/Person");
 const decorators_1 = require("../utils/decorators");
 const BaseService_1 = require("./BaseService");
 const DayItem_1 = __importDefault(require("../entities/DayItem"));
+const dayjs_1 = __importDefault(require("dayjs"));
 const Authentication_1 = __importDefault(require("../entities/Authentication"));
 let PersonService = PersonService_1 = class PersonService extends BaseService_1.BaseService {
     availabilityRepo;
@@ -62,6 +63,22 @@ let PersonService = PersonService_1 = class PersonService extends BaseService_1.
         return res;
     };
     addAvailabilities = async (params) => {
+        const existingAvailabilities = (await this.repo.findOneOrFail({ id: params.personId }, [
+            "availabilities.day"
+        ])).availabilities;
+        params.availabilities = params.availabilities.filter(x => {
+            const start = (0, dayjs_1.default)(x.start, "HH:mm");
+            const end = (0, dayjs_1.default)(x.end, "HH:mm");
+            const overlaps = existingAvailabilities.getItems().some(y => {
+                const bStart = (0, dayjs_1.default)(y.day.start, "HH:mm");
+                const bEnd = (0, dayjs_1.default)(y.day.end, "HH:mm");
+                const res = x.day === y.day.day &&
+                    !(end.isSameOrBefore(bStart, "minute") ||
+                        start.isSameOrAfter(bEnd, "minute"));
+                return res;
+            });
+            return !overlaps;
+        });
         const availabilities = [];
         for (const i of params.availabilities) {
             const item = new Availability_1.default({
@@ -75,8 +92,12 @@ let PersonService = PersonService_1 = class PersonService extends BaseService_1.
             });
             availabilities.push(item);
         }
-        await this.availabilityRepo.persistAndFlush(availabilities);
-        const res = await this.availabilityRepo.find({ id: { $in: availabilities.map(x => x.id) } }, ["day"]);
+        if (availabilities.length > 0) {
+            await this.availabilityRepo.persistAndFlush(availabilities);
+        }
+        const res = availabilities.length > 0
+            ? await this.availabilityRepo.find({ id: { $in: availabilities.map(x => x.id) } }, ["day"])
+            : [];
         return res;
     };
     deleteAvailability = async (id) => {
@@ -107,6 +128,16 @@ let PersonService = PersonService_1 = class PersonService extends BaseService_1.
             item.role = params.role;
         }
         else {
+            const existing = await this.repo.find({
+                firstName: params.firstName.charAt(0).toUpperCase() +
+                    params.firstName.slice(1).toLowerCase(),
+                lastName: params.lastName.charAt(0).toUpperCase() +
+                    params.lastName.slice(1).toLowerCase(),
+                phone: params.phone
+            });
+            if (existing && existing.length > 0) {
+                return;
+            }
             const item = new Person_1.Person({
                 firstName: params.firstName.charAt(0).toUpperCase() +
                     params.firstName.slice(1).toLowerCase(),

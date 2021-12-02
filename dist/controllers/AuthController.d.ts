@@ -6,6 +6,6 @@ export default class AuthController extends BaseHttpController {
     private repo;
     constructor(repo: EntityRepository<Authentication>);
     getUser(req: Request): Promise<import("inversify-express-utils/dts/results").JsonResult>;
-    login(req: Request, res: Response): Promise<import("inversify-express-utils/dts/results").JsonResult | import("inversify-express-utils/dts/results").StatusCodeResult>;
+    login(req: Request, res: Response): Promise<import("inversify-express-utils/dts/results").JsonResult | import("inversify-express-utils/dts/results").StatusCodeResult | import("inversify-express-utils/dts/results").BadRequestResult>;
     logout(req: Request, res: Response): Promise<import("inversify-express-utils/dts/results").StatusCodeResult>;
 }
