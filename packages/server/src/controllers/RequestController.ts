@@ -1,3 +1,7 @@
+/**
+ * This uses NodeJS design pattern (refer to BaseController).
+ * Can be expanded to include other requests, currently only handles TimeOff.
+ */
 import dayjs from "dayjs";
 import { Request } from "express";
 import { inject } from "inversify";

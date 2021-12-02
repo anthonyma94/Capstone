@@ -1,7 +1,7 @@
 <template>
   <Dialog
     :modal="true"
-    header="Add Shift Schedule Rule"
+    :header="`${id ? 'Edit' : 'Add'} Shift Schedule Rule`"
     :draggable="false"
     :dismissable-mask="true"
     :keep-in-view-port="true"

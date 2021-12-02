@@ -1,3 +1,7 @@
+/**
+ * Used to authorize various functions. This class is needed for DI to function.
+ */
+
 import { Request, Response, NextFunction } from "express";
 import { provide } from "inversify-binding-decorators";
 import { BaseMiddleware } from "inversify-express-utils";

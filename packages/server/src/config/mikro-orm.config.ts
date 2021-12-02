@@ -1,15 +1,10 @@
-import {
-    EntityProperty,
-    LoadStrategy,
-    NamingStrategy,
-    Platform,
-    Type,
-    ValidationError,
-    TimeType as DefaultTime
-} from "@mikro-orm/core";
+/**
+ * Config for Mikro-ORM.
+ */
+import { Type, ValidationError } from "@mikro-orm/core";
 import { Connection } from "@mikro-orm/core/connections/Connection";
 import { IDatabaseDriver } from "@mikro-orm/core/drivers/IDatabaseDriver";
-import { Configuration, Options } from "@mikro-orm/core/utils/Configuration";
+import { Options } from "@mikro-orm/core/utils/Configuration";
 import { TsMorphMetadataProvider } from "@mikro-orm/reflection";
 
 export default {
@@ -25,8 +20,11 @@ export default {
     metadataProvider: TsMorphMetadataProvider
 } as Options<IDatabaseDriver<Connection>>;
 
+/**
+ * Creates a custom type to handle all time types in the DB.
+ */
 export class TimeType extends Type {
-    convertToDatabaseValue(value: string, platform: Platform): string {
+    convertToDatabaseValue(value: string): string {
         const regex = new RegExp(/^\d{1,2}:\d{1,2}(:\d{1,2})?$/g);
         const match = regex.exec(value);
         if (match) {
@@ -39,7 +37,7 @@ export class TimeType extends Type {
             throw new ValidationError(`${value} is not a valid time.`);
         }
     }
-    convertToJSValue(value: string, platform: Platform) {
+    convertToJSValue(value: string) {
         return value.replace(/:\d{1,2}$/g, "");
     }
     getColumnType() {

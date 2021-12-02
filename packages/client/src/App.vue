@@ -1,3 +1,7 @@
+<!--
+  Main view for Vue. Every view (as matched by router) is a component rendered here.
+  Also holds the Navbar and initializes all data used in the app.
+-->
 <template>
   <div>
     <Navbar v-if="showNav" />

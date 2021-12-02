@@ -1,5 +1,8 @@
+/**
+ * This uses NodeJS design pattern (refer to BaseController).
+ */
 import dayjs from "dayjs";
-import { NextFunction, Request, Response } from "express";
+import { Request } from "express";
 import { inject } from "inversify";
 import { BaseHttpController } from "inversify-express-utils";
 import AuthMiddleware from "../middleware/AuthMiddleware";

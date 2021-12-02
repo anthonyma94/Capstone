@@ -1,3 +1,7 @@
+/**
+ * This uses ASP.NET design pattern (refer to BaseController).
+ */
+
 import dayjs from "dayjs";
 import { NextFunction, Request, Response } from "express";
 import { inject } from "inversify";

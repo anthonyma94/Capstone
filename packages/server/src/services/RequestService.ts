@@ -1,3 +1,7 @@
+/**
+ * This uses the NodeJS design pattern (refer to BaseService).
+ */
+
 import { EntityRepository } from "@mikro-orm/core";
 import { Dayjs } from "dayjs";
 import { provide } from "inversify-binding-decorators";
@@ -19,14 +23,6 @@ export default class RequestService {
             : await this.timeOffRepo.findAll({ populate: ["start", "end"] });
 
         return items;
-    }
-
-    public async serializeTimeOff(timeoff: string) {
-        const item = await this.timeOffRepo.findOneOrFail({ id: timeoff }, [
-            "start",
-            "end"
-        ]);
-        return item;
     }
 
     public async createTimeOffRequest(params: {
@@ -57,7 +53,11 @@ export default class RequestService {
 
         await this.timeOffRepo.flush();
 
-        return this.serializeTimeOff(item.id);
+        const res = await this.timeOffRepo.findOneOrFail({ id: item.id }, [
+            "start",
+            "end"
+        ]);
+        return res;
     }
 
     public async approveOrDenyTimeOffRequest(id: string, decision: boolean) {

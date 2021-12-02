@@ -1,3 +1,8 @@
+/**
+ * This uses a hybrid design pattern (refer to BaseController).
+ * Also handles availability changes as that is tied to Person.
+ */
+
 import dayjs from "dayjs";
 import { Request } from "express";
 import { inject } from "inversify";
@@ -45,7 +50,7 @@ export default class PersonController extends BaseController<
     @Put("/:id", AuthMiddleware)
     public async updatePerson(req: Request) {
         try {
-            const res = await this.service.updatePerson(req.body);
+            const res = await this.service.addOrUpdatePerson(req.body);
             return this.json(res, 200);
         } catch (e) {
             console.error(e);

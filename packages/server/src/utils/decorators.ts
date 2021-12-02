@@ -1,3 +1,8 @@
+/**
+ * Holds all decorators used throughout the project.
+ * Some decorators are extended from their respective libraries for DI purposes.
+ */
+
 import { Entity as ORMEntity, EntityOptions } from "@mikro-orm/core";
 import {
     controller,
@@ -14,6 +19,7 @@ import {
 } from "inversify/lib/annotation/inject";
 import { DI_TYPES } from "../types";
 
+// Mikro-ORM Entity
 export const Entity = (options?: EntityOptions<any>) => (target: any) => {
     ORMEntity(options)(target);
     const currentMetadata = target;
@@ -28,6 +34,7 @@ export const Entity = (options?: EntityOptions<any>) => (target: any) => {
     );
 };
 
+// Shorthand decorator to inject a Mikro-ORM Repo
 export const InjectRepo = (serviceIdentifer: ServiceIdentifierOrFunc) => (
     target: Object,
     propertyKey: string,
@@ -45,6 +52,7 @@ export interface RouteDefinition {
     methodName: string;
 }
 
+// Express Controller
 export const Controller = (path?: string, ...middleware: any[]) => (
     target: Function
 ) => {
@@ -56,6 +64,7 @@ export const Controller = (path?: string, ...middleware: any[]) => (
     controller(path, ...middleware)(target);
 };
 
+// HTTP Verb factory
 const decoratorFactory = (
     path: string,
     verb: HTTPVerbs,
@@ -79,6 +88,7 @@ const decoratorFactory = (
     }
 };
 
+// Relevant HTTP Verbs used for the project
 export const Get = (path: string, ...middleware: interfaces.Middleware[]) => (
     target: Object,
     propertyKey: string,

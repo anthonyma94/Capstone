@@ -1,3 +1,6 @@
+/**
+ * Handles all JWT authentication & authorization.
+ */
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
@@ -12,6 +15,7 @@ declare global {
     }
 }
 
+// Creates an async method as the default verify is not async. Easier to use.
 const asyncVerify = async (token: string) => {
     const promise = new Promise<any>((resolve, reject) => {
         jwt.verify(token, process.env.JWT_SECRET!, (err: any, data: any) => {

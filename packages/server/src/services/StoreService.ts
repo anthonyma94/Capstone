@@ -1,3 +1,7 @@
+/**
+ * This follows a hybrid design pattern (refer to BaseService).
+ */
+
 import { provide } from "inversify-binding-decorators";
 import { BaseService } from "./BaseService";
 import Store from "../entities/Store";

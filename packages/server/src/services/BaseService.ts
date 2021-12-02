@@ -1,3 +1,13 @@
+/**
+ * Other services extend from this. These services follow a design pattern from ASP.NET,
+ * where services are used by controllers to retrieve content from DB.
+ *
+ * Not all services used follow this pattern. Throughout the project I transitioned into
+ * a more common pattern used in NodeJS, where services provide all needed functionalities,
+ * and controllers merely call service methods and return its results. I found the new
+ * design pattern to be easier to read and keep track of.
+ */
+
 import {
     GetRepository,
     EntityRepository,

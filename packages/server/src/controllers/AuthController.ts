@@ -1,3 +1,8 @@
+/**
+ * This uses the NodeJS pattern (refer to BaseController).
+ * There are no related services for this controller as its logic is very simple.
+ */
+
 import { EntityRepository } from "@mikro-orm/core";
 import { Request, Response } from "express";
 import { BaseHttpController } from "inversify-express-utils";

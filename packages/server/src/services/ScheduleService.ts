@@ -1,6 +1,9 @@
+/**
+ * This uses a combination of ASP.NET and NodeJS patterns (refer to BaseService).
+ */
+
 import { EntityRepository } from "@mikro-orm/core/entity/EntityRepository";
-import dayjs, { Dayjs, tz } from "dayjs";
-import customParseFormat from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import { provide } from "inversify-binding-decorators";
 import Schedule from "../entities/Schedule";
 import ScheduleRule from "../entities/ScheduleRule";
@@ -10,7 +13,6 @@ import DayItem from "../entities/DayItem";
 import { Person } from "../entities/Person";
 import ScheduleItem from "../entities/ScheduleItem";
 import { FilterQuery } from "@mikro-orm/core";
-import TimeOff from "../entities/TimeOff";
 import { inject } from "inversify";
 import Scheduler from "../utils/scheduler";
 import ScheduleRuleItem from "../entities/ScheduleRuleItem";
@@ -27,15 +29,17 @@ export default class ScheduleService extends BaseService<Schedule> {
         private scheduleItemRepo: EntityRepository<ScheduleItem>,
         @InjectRepo(Person)
         private personRepo: EntityRepository<Person>,
-        @InjectRepo(TimeOff)
-        private timeoffRepo: EntityRepository<TimeOff>,
         @inject(Scheduler)
         private scheduler: Scheduler
     ) {
         super(repo);
-        dayjs.extend(customParseFormat);
     }
 
+    /**
+     * Converts a schedule item to a FullCalendar event object.
+     * @param item Schedule Item
+     * @returns FullCalendar event
+     */
     private scheduleItemToEvent = async (item: ScheduleItem) => {
         if (!item.person.jobTitle || !item.person.jobTitle.name) {
             item.person.jobTitle = (
@@ -44,26 +48,23 @@ export default class ScheduleService extends BaseService<Schedule> {
                 ])
             ).jobTitle;
         }
+        const start = dayjs(
+            `${dayjs(item.day.date)
+                .utc()
+                .format("YYYY-MM-DD")} ${item.day.start}`,
+            "YYYY-MM-DD HH:mm"
+        );
+        const end = dayjs(
+            `${dayjs(item.day.date)
+                .utc()
+                .format("YYYY-MM-DD")} ${item.day.end}`,
+            "YYYY-MM-DD HH:mm"
+        );
         const res = {
             id: item.id,
-            start: dayjs(
-                `${dayjs(item.day.date)
-                    .utc()
-                    .format("YYYY-MM-DD")} ${item.day.start}`,
-                "YYYY-MM-DD HH:mm"
-            )
-                .utc()
-                // .tz("America/Toronto", false)
-                .toDate(),
-            end: dayjs(
-                `${dayjs(item.day.date)
-                    .utc()
-                    .format("YYYY-MM-DD")} ${item.day.end}`,
-                "YYYY-MM-DD HH:mm"
-            )
-                .utc()
-                .toDate(),
-            title: `${item.day.start}-${item.day.end}`,
+            start: start.toDate(),
+            end: end.toDate(),
+            title: `${start.format("hh:mm A")} - ${end.format("hh:mm A")}`,
             resourceId: item.person.id,
             extendedProps: {
                 job: item.person.jobTitle.name,
@@ -128,9 +129,15 @@ export default class ScheduleService extends BaseService<Schedule> {
 
         await this.scheduleItemRepo.persistAndFlush(item);
 
-        return this.scheduleItemToEvent(item);
+        return await this.scheduleItemToEvent(item);
     };
 
+    /**
+     * Gets schedule. Checks only for the given week for lazy loading.
+     * @param start The sunday to check
+     * @param user Find for a specific user
+     * @returns Schedule
+     */
     public getSchedule = async (start: Dayjs, user: string) => {
         const where: FilterQuery<Schedule> = {
             start: {
@@ -154,32 +161,33 @@ export default class ScheduleService extends BaseService<Schedule> {
         const response = [] as any[];
 
         for (const item of scheduleResp.scheduleItems) {
-            response.push({
-                id: item.id,
-                start: dayjs(
-                    `${dayjs(item.day.date)
-                        .utc()
-                        .format("YYYY-MM-DD")} ${item.day.start}`,
-                    "YYYY-MM-DD HH:mm"
-                )
-                    .utc()
-                    .toDate(),
-                end: dayjs(
-                    `${dayjs(item.day.date)
-                        .utc()
-                        .format("YYYY-MM-DD")} ${item.day.end}`,
-                    "YYYY-MM-DD HH:mm"
-                )
-                    .utc()
-                    .toDate(),
-                title: `${item.day.start}-${item.day.end}`,
-                resourceId: item.person.id,
-                extendedProps: {
-                    job: item.person.jobTitle.name,
-                    name: item.person.firstName + " " + item.person.lastName,
-                    schedule: scheduleResp.id
-                }
-            });
+            response.push(await this.scheduleItemToEvent(item));
+            // response.push({
+            //     id: item.id,
+            //     start: dayjs(
+            //         `${dayjs(item.day.date)
+            //             .utc()
+            //             .format("YYYY-MM-DD")} ${item.day.start}`,
+            //         "YYYY-MM-DD HH:mm"
+            //     )
+            //         .utc()
+            //         .toDate(),
+            //     end: dayjs(
+            //         `${dayjs(item.day.date)
+            //             .utc()
+            //             .format("YYYY-MM-DD")} ${item.day.end}`,
+            //         "YYYY-MM-DD HH:mm"
+            //     )
+            //         .utc()
+            //         .toDate(),
+            //     title: `${item.day.start}-${item.day.end}`,
+            //     resourceId: item.person.id,
+            //     extendedProps: {
+            //         job: item.person.jobTitle.name,
+            //         name: item.person.firstName + " " + item.person.lastName,
+            //         schedule: scheduleResp.id
+            //     }
+            // });
         }
 
         return { data: response, default: scheduleResp.isDefault };

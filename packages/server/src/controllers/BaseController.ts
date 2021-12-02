@@ -1,3 +1,10 @@
+/**
+ * Similar to BaseService, this controller is extended by other controllers to perform basic functions.
+ * Also similar to BaseService, this design pattern originated from ASP.NET, where all logic
+ * is performed within the controller. I switched to a more common NodeJS pattern throughout
+ * the project where controllers call specific service methods and return its result.
+ */
+
 import { NextFunction, Request, Response } from "express";
 import { injectable } from "inversify";
 import { BaseHttpController } from "inversify-express-utils";

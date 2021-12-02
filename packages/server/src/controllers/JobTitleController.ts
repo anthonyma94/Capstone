@@ -1,3 +1,6 @@
+/**
+ * This uses the ASP.NET design pattern (refer to BaseController).
+ */
 import { Request } from "express";
 import { inject } from "inversify";
 import { JobTitle } from "../entities/JobTitle";

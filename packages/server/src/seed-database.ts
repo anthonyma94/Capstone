@@ -248,23 +248,6 @@ dayjs.extend(customParse);
 
     em.persist(scheduleRules);
 
-    // for (const i of sampleScheduleRules) {
-    //     for (const j of i.rules) {
-    //         scheduleRuleItems.push(
-    //             new ScheduleRuleItem({
-    //                 scheduleRule: scheduleRules.find(
-    //                     x =>
-    //                         x.day.start === i.day.start &&
-    //                         x.day.end === i.day.end &&
-    //                         x.day.day === i.day.day
-    //                 )!,
-    //                 jobTitle: jobTitles.find(x => x.name === j.jobTitle)!,
-    //                 amount: j.amount
-    //             })
-    //         );
-    //     }
-    // }
-
     em.persist(scheduleRuleItems);
 
     await em.flush();

@@ -1,3 +1,6 @@
+/**
+ * Injects all plugins needed by dayjs.
+ */
 import dayjs from "dayjs";
 import customParse from "dayjs/plugin/customParseFormat";
 import utc from "dayjs/plugin/utc";

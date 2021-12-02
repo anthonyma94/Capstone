@@ -1,4 +1,7 @@
-// Packages
+/**
+ * Config object for DB connection.
+ */
+
 import { Connection, IDatabaseDriver, MikroORM } from "@mikro-orm/core";
 
 // Config

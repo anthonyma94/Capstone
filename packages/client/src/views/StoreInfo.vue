@@ -24,7 +24,11 @@
       <div>
         <div class="flex justify-around">
           <h1>Store Hours</h1>
-          <Button v-if="authModule.IS_ADMIN" @click="handleHourChange">
+          <Button
+            v-if="authModule.IS_ADMIN"
+            @click="handleHourChange"
+            :disabled="v$.start.$invalid || v$.end.$invalid"
+          >
             Save
           </Button>
         </div>
@@ -40,9 +44,15 @@
             <tr v-for="(day, index) in dayNames" :key="day">
               <th>{{ day }}</th>
               <td>
+                <Input
+                  v-if="!authModule.IS_ADMIN"
+                  :model-value="dateToTimeString(storeHours[index].start)"
+                  :disabled="true"
+                />
                 <Calendar
                   v-model="storeHours[index].start"
                   :timeOnly="true"
+                  v-else
                   placeholder="09:00 AM"
                   hourFormat="12"
                   :step-minute="30"
@@ -50,11 +60,18 @@
                 />
               </td>
               <td>
+                <Input
+                  v-if="!authModule.IS_ADMIN"
+                  :model-value="dateToTimeString(storeHours[index].end)"
+                  :disabled="true"
+                />
                 <Calendar
                   v-model="storeHours[index].end"
+                  v-else
                   :timeOnly="true"
                   placeholder="08:00 PM"
                   hourFormat="12"
+                  :keep-invalid="!authModule.IS_ADMIN"
                   :step-minute="30"
                   :manual-input="true"
                 />
@@ -206,18 +223,81 @@ const unique = (value: any) => {
     .includes(value.toLowerCase().trim());
 };
 
+const allRequired = (value: any) => {
+  return !storeHours.value.every(x => !x.start && !x.end);
+};
+
+const bothRequired = (param: any) => (value: any) => {
+  const check = storeHours.value[param];
+  if (!check.start && !check.end) {
+    return true;
+  } else {
+    const start = check.start ? dayjs(check.start) : undefined;
+    const end = check.end ? dayjs(check.end) : undefined;
+
+    const res = start && end && end.isAfter(start);
+    return res;
+  }
+};
+
 const rules = {
   storeName: { required },
   newJobTitle: {
     required: helpers.withMessage("This field is required.", required),
     unique: helpers.withMessage("Job title must be unique.", unique)
-  }
+  },
+  start: [...Array(7).keys()].reduce((acc, cur) => {
+    acc[cur] = {
+      // rules for start here
+      required: bothRequired(cur),
+      allRequired
+    };
+    return acc;
+  }, {} as any),
+  end: [...Array(7).keys()].reduce((acc, cur) => {
+    acc[cur] = {
+      // rules for end here
+      required: bothRequired(cur),
+      allRequired
+    };
+    return acc;
+  }, {} as any)
 };
 const v$ = useVuelidate(
   rules,
-  { storeName, newJobTitle },
+  {
+    storeName,
+    newJobTitle,
+    ...storeHours.value.reduce(
+      (acc, cur, index) => {
+        acc.start[index] = cur.start;
+        acc.end[index] = cur.end;
+        return acc;
+      },
+      {
+        start: {} as { [index: number]: Date | undefined },
+        end: {} as { [index: number]: Date | undefined }
+      }
+    )
+  },
   { $autoDirty: true }
 );
+
+// const availability$ = useVuelidate(
+//   rules,
+//   availabilityRef.value.reduce(
+//     (acc, cur, index) => {
+//       acc.start[index] = cur.start;
+//       acc.end[index] = cur.end;
+//       return acc;
+//     },
+//     {
+//       start: {} as { [index: number]: Date | undefined },
+//       end: {} as { [index: number]: Date | undefined }
+//     }
+//   ),
+//   { $autoDirty: true }
+// );
 
 const dayNames = [
   "Sunday",
@@ -341,6 +421,13 @@ const computedJobTitle = computed<
 });
 
 // Methods
+
+const dateToTimeString = (e: Date | undefined) => {
+  if (e) {
+    return dayjs(e).format("hh:mm A");
+  }
+  return "";
+};
 
 const checkJobTitleDeletable = (e: any) => {
   const res = e.numOfEmps === 0;

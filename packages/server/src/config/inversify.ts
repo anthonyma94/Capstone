@@ -1,4 +1,6 @@
-// Packages
+/**
+ * Config used for DI. Inversify is a npm package that allows for DI for TypeScript.
+ */
 import { AsyncContainerModule, interfaces } from "inversify";
 import {
     Connection,
@@ -7,11 +9,7 @@ import {
     MikroORM,
     EntityRepository
 } from "@mikro-orm/core";
-
-// Clients
 import { DatabaseClient } from "./database";
-
-// Inversify Types
 import { DI_TYPES } from "../types";
 
 const bindEntityToRepository = <T, U>(
@@ -35,9 +33,6 @@ const bindings = new AsyncContainerModule(
         const databaseClient: DatabaseClient = new DatabaseClient();
         const connection = await databaseClient.connect();
         if (connection) {
-            // Run Migrations
-            // await connection.getMigrator().up();
-
             // Connection Bindings
             bind<MikroORM<IDatabaseDriver<Connection>>>(
                 DI_TYPES.DATABASE_CONNECTION

@@ -5,9 +5,12 @@
         <Button
           @click="showDefaultScheduleModal = true"
           :disabled="isDefaultSchedule"
+          v-if="scheduleExists"
           >Set Schedule as Default</Button
         >
-        <Button @click="editable = true">Edit Schedule</Button>
+        <Button @click="editable = true" v-if="scheduleExists"
+          >Edit Schedule</Button
+        >
         <Button @click="showGenerateModal = true">Generate Schedule</Button>
       </div>
       <div class="flex gap-3" v-else-if="editable && authModule.IS_ADMIN">
@@ -99,6 +102,7 @@ import { useStore } from "@/store";
 import dayjs from "dayjs";
 import AuthModule from "@/store/modules/auth";
 import { asyncComputed } from "@vueuse/core";
+import { watch } from "vue-demi";
 // Prop and prop interface
 
 // Use hooks
@@ -115,13 +119,16 @@ const editable = ref(false);
 const weekStart = ref<Date>();
 
 // Computed
-const minDate = computed(() => {
-  const date = new Date();
-  const dayOfWeek = date.getDay();
-  date.setDate(date.getDate() + (dayOfWeek % 7) || 7);
-  return date;
-});
+const minDate = computed(() => new Date());
 const isDefaultSchedule = computed(() => storeModule.SCHEDULE_IS_DEFAULT.value);
+
+const scheduleExists = computed(() => storeModule.GET_SCHEDULE.length > 0);
+
+const disabledGenerateDates = asyncComputed(async () => {
+  const dep = showGenerateModal.value;
+  const res = await storeModule.SCHEDULE_START_DATES();
+  return res;
+}, []);
 
 // Methods
 const handleCalendarPickerUpdate = (e: [Date, Date | undefined]) => {
@@ -132,11 +139,6 @@ const handleCalendarPickerUpdate = (e: [Date, Date | undefined]) => {
     generateWeekStart.value = [firstDate, secondDate];
   }
 };
-
-const disabledGenerateDates = asyncComputed(async () => {
-  const res = await storeModule.SCHEDULE_START_DATES();
-  return res;
-}, []);
 
 const handleConfirmGenerate = async () => {
   if (generateWeekStart.value && generateWeekStart.value[0]) {
@@ -157,5 +159,13 @@ const handleConfirmDefaultSchedule = async () => {
   showDefaultScheduleModal.value = false;
 };
 // Watchers
+watch(
+  () => scheduleExists.value,
+  newVal => {
+    if (!newVal) {
+      editable.value = false;
+    }
+  }
+);
 </script>
 <style scoped lang="postcss"></style>

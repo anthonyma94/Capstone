@@ -1,3 +1,7 @@
+/**
+ * This service uses a combination of NodeJS and ASP.NET patterns (refer to BaseService).
+ */
+
 import {
     EntityRepository,
     FindOneOptions,
@@ -69,6 +73,7 @@ export default class PersonService extends BaseService<Person> {
             day: number;
         }[];
     }) => {
+        // Checks existing availabilities to make sure new availabilities don't overlap.
         const existingAvailabilities = (
             await this.repo.findOneOrFail({ id: params.personId }, [
                 "availabilities.day"
@@ -146,7 +151,7 @@ export default class PersonService extends BaseService<Person> {
         return item;
     };
 
-    public updatePerson = async (params: {
+    public addOrUpdatePerson = async (params: {
         pay: number;
         maxWeeklyHours: number;
         jobTitle: string;
@@ -208,11 +213,29 @@ export default class PersonService extends BaseService<Person> {
                 jobTitle: params.jobTitle as any
             });
 
+            let username =
+                item.firstName.charAt(0).toLowerCase() +
+                item.lastName.toLowerCase();
+            let count = 1;
+
+            // Check if username already exists, adds a number to the new username if it does.
+            try {
+                while (true) {
+                    await this.authRepo.findOneOrFail({ username });
+                    if (isNaN(parseInt(username.charAt(username.length - 1)))) {
+                        username += count.toString();
+                    } else {
+                        username =
+                            username.slice(0, username.length - 2) +
+                            count.toString();
+                    }
+                    count++;
+                }
+            } catch {}
+
             const auth = new Authentication({
                 person: item,
-                username:
-                    item.firstName.charAt(0).toLowerCase() +
-                    item.lastName.toLowerCase(),
+                username,
                 password: "password",
                 role: "user"
             });

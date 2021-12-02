@@ -1,3 +1,7 @@
+/**
+ * Scheduler class only generates schedule. It is abstracted away for easier readability.
+ */
+
 import { EntityRepository } from "@mikro-orm/core";
 import dayjs, { Dayjs } from "dayjs";
 import { provide } from "inversify-binding-decorators";
@@ -20,6 +24,13 @@ export default class Scheduler {
     ) {}
 
     public async createSchedule(scheduleStart: Dayjs) {
+        /**
+         * Checks if employee has time-off during the given duration.
+         * @param timeoffs Array of timeoffs to check
+         * @param start start duration
+         * @param end end duration
+         * @returns Whether employee has time off in the period
+         */
         function checkTimeOff(
             timeoffs: Array<{ id: string; start: Dayjs; end: Dayjs }>,
             start: Dayjs,

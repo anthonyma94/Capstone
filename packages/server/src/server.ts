@@ -1,3 +1,8 @@
+/**
+ * Creates and starts the server.
+ * DI is collected and injected here, as well as server-wide middleware like authentication.
+ * Site is served statically here if in production.
+ */
 import "reflect-metadata";
 import "./controllers";
 import "./utils/dayjs";
