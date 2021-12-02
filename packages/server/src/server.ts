@@ -14,6 +14,7 @@ import * as path from "path";
 import dayjs from "dayjs";
 import customParse from "dayjs/plugin/customParseFormat";
 import { authenticateToken } from "./utils/jwt";
+import history from "connect-history-api-fallback";
 
 export default class Server {
     protected app?: Application;
@@ -43,6 +44,7 @@ export default class Server {
                     // Serves content in production
                     if (process.env.NODE_ENV === "production") {
                         console.log("App is in production.");
+                        app.use(history());
                         app.use(
                             express.static(path.resolve(__dirname, "public"))
                         );

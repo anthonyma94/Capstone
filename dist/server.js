@@ -37,6 +37,7 @@ const path = __importStar(require("path"));
 const dayjs_1 = __importDefault(require("dayjs"));
 const customParseFormat_1 = __importDefault(require("dayjs/plugin/customParseFormat"));
 const jwt_1 = require("./utils/jwt");
+const connect_history_api_fallback_1 = __importDefault(require("connect-history-api-fallback"));
 class Server {
     app;
     server;
@@ -57,6 +58,7 @@ class Server {
                 app.use(jwt_1.authenticateToken);
                 if (process.env.NODE_ENV === "production") {
                     console.log("App is in production.");
+                    app.use((0, connect_history_api_fallback_1.default)());
                     app.use(express_1.default.static(path.resolve(__dirname, "public")));
                 }
             });

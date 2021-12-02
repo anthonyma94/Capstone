@@ -82,6 +82,9 @@ const router = createRouter({
 });
 
 router.beforeEach(async to => {
+    if (to.matched.length === 0) {
+        return "/";
+    }
     const res = await axios.get("/auth");
     if (!res.data) {
         if (to.path === "/") return true;

@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 import { BaseHttpController } from "inversify-express-utils";
 import Authentication from "../entities/Authentication";
 import { Controller, Get, InjectRepo, Post } from "../utils/decorators";
-import { authenticateToken, generateAccessToken } from "../utils/jwt";
+import { generateAccessToken } from "../utils/jwt";
 
 @Controller()
 export default class AuthController extends BaseHttpController {
