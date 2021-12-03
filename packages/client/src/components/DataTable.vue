@@ -58,7 +58,7 @@
               class="px-2"
               :model-value="row[col.id]"
               :type="typeof row[col.id] === 'number' ? 'number' : 'text'"
-              @update:model-value="e => (cache[row.id][col.id] = e)"
+              @update:model-value="e => handleInput(e, row.id, col.id)"
             />
           </slot>
           <slot v-else :name="col.id" :data="row[col.id]">
@@ -189,7 +189,6 @@ interface Props {
     dataType?: "date" | "time" | "datetime" | null;
     sortFunc?: (x: any, y: any) => number;
     editable?: boolean;
-    validationFunc?: (x: any) => boolean;
   }[];
   pagination?: boolean;
   rowsPerPage?: number;
@@ -271,7 +270,6 @@ const computedCols = computed(() => {
                 : x.toString().localeCompare(y.toString());
             return asc;
           },
-          validationFunc: x => true,
           ...userProps[key]
         };
 
@@ -393,6 +391,15 @@ const initDataRef = () => {
   });
 };
 
+const handleInput = (
+  e: string,
+  rowId: string | number,
+  colId: string | number
+) => {
+  console.log(e);
+  cache.value[rowId][colId] = e;
+};
+
 const handleEditClick = (id: string | number) => {
   const item = dataRef.value.find(x => x.id === id)!;
   item._metadata.edit = true;
@@ -416,25 +423,13 @@ const handlePagination = (e: number | string) => {
 
 const handleSaveEditClick = (id: string | number) => {
   const final = cache.value[id];
-  let valid = true;
-  for (const key of Object.keys(final)) {
-    const col = computedCols.value.find(x => x.id === key)!;
-    if (!col.validationFunc(final[key])) {
-      valid = false;
-      break;
-    }
-  }
-
   handleCancelEditClick(id);
-
-  if (valid) {
-    const index = dataRef.value.findIndex(x => x.id === id);
-    dataRef.value[index] = {
-      ...dataRef.value[index],
-      ...final
-    };
-    emitChanges(dataRef.value[index], "edit");
-  }
+  const index = dataRef.value.findIndex(x => x.id === id);
+  dataRef.value[index] = {
+    ...dataRef.value[index],
+    ...final
+  };
+  emitChanges(dataRef.value[index], "edit");
 };
 
 const handleCancelEditClick = (id: string | number) => {

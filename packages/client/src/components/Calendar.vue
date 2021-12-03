@@ -347,6 +347,8 @@ const missingShifts = computed(() => {
       rules.forEach(rule => {
         const ruleStart = rule.day.start;
         const ruleEnd = rule.day.end;
+        const start = dayjs(ruleStart, "HH:mm").format("hh:mm A");
+        const end = dayjs(ruleEnd, "HH:mm").format("hh:mm A");
         rule.rules.forEach(item => {
           const jobTitle = item.jobTitle.name;
           const count = daySchedules.reduce((acc, cur) => {
@@ -363,7 +365,7 @@ const missingShifts = computed(() => {
           const missingCount = item.amount - count;
           if (missingCount > 0) {
             missingCountObj.push({
-              shift: `${ruleStart}-${ruleEnd}`,
+              shift: `${start} - ${end}`,
               job: jobTitle,
               amount: missingCount
             });

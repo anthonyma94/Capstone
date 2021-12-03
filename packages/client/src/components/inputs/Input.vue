@@ -14,7 +14,7 @@
         :placeholder="placeholder"
         :autofocus="autofocus"
         :type="props.type"
-        :value="modelValue"
+        :value="internalValue"
         v-bind="$attrs"
         @input="onInput"
         @focus="onFocus"
@@ -24,8 +24,8 @@
         v-if="placeholder && showLabel"
         class="absolute bottom-0 origin-0 duration-300 -z-1 truncate max-w-full text-gray-400"
         :class="[
-          { active: isInFocus || modelValue !== '' },
-          { filled: isInFocus && modelValue !== '' },
+          { active: isInFocus || internalValue !== '' },
+          { filled: isInFocus && internalValue !== '' },
           { invalid: invalid }
         ]"
         tabindex="-1"
@@ -64,7 +64,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, ref, watch } from "vue-demi";
+import { computed, onMounted, ref, watch } from "vue-demi";
 
 // Prop and prop interface
 interface Props {
@@ -96,6 +96,7 @@ const emit = defineEmits<{
 // Data
 const isInFocus = ref(false);
 const wrapper = ref();
+const internalValue = ref("");
 
 // Computed
 
@@ -111,21 +112,43 @@ const onBlur = (e: FocusEvent) => {
     isInFocus.value = false;
   }
 
-  if (typeof props.modelValue === "string") {
-    emit("update:modelValue", props.modelValue.trim());
-  }
+  internalValue.value = internalValue.value.trim();
+
+  // if (typeof props.modelValue === "string") {
+  // emit("update:modelValue", props.modelValue.trim());
+  // }
 };
 const onFocus = (e: FocusEvent) => {
   isInFocus.value = true;
 };
 const onInput = (e: Event) => {
-  emit("update:modelValue", (e.target as HTMLInputElement).value);
+  internalValue.value = (e.target as HTMLInputElement).value;
+  // emit("update:modelValue", (e.target as HTMLInputElement).value);
 };
 const onKeypress = (e: KeyboardEvent) => {
   if (!allowsKeypress.value) e.preventDefault();
 };
 
 // Watchers
+watch(
+  () => props.modelValue,
+  newVal =>
+    (internalValue.value =
+      typeof newVal === "string" ? newVal : newVal.toString())
+);
+watch(
+  () => internalValue.value,
+  newVal => {
+    emit("update:modelValue", newVal);
+  }
+);
+
+onMounted(() => {
+  internalValue.value =
+    typeof props.modelValue === "string"
+      ? props.modelValue
+      : props.modelValue.toString();
+});
 </script>
 <style scoped lang="postcss">
 .active {

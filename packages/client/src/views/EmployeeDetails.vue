@@ -177,15 +177,13 @@ const availabilityCols: InstanceType<typeof DataTable>["$props"]["cols"] = [
     id: "start",
     sortFunc: (x, y) =>
       localecompareDayjs(dayjs(x, "hh:mm A"), dayjs(y, "hh:mm A")),
-    dataType: "time",
-    validationFunc: x => dayjs(x, ["hh:mm A"]).isValid()
+    dataType: "time"
   },
   {
     id: "end",
     sortFunc: (x, y) =>
       localecompareDayjs(dayjs(x, "hh:mm A"), dayjs(y, "hh:mm A")),
-    dataType: "time",
-    validationFunc: x => dayjs(x, ["hh:mm A"]).isValid()
+    dataType: "time"
   }
 ];
 
