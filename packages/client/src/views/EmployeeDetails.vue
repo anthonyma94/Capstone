@@ -306,51 +306,57 @@ const provinceOptions = Object.keys(provinceNames).map(key => {
 
 // Methods
 const onSaveClick = async () => {
-  let error = false;
-  loadingAddPerson.value = true;
-  const res: any = {
-    ...data.value,
-    pay: parseFloat(data.value.pay),
-    maxWeeklyHours: parseFloat(data.value.maxWeeklyHours)
-  };
-  if (!res.id) {
-    res.id = route.params.id as string;
-  }
-  delete res.availabilities;
+  try {
+    loadingAddPerson.value = true;
+    const res: any = {
+      ...data.value,
+      pay: parseFloat(data.value.pay),
+      maxWeeklyHours: parseFloat(data.value.maxWeeklyHours)
+    };
+    if (!res.id) {
+      res.id = route.params.id as string;
+    }
+    delete res.availabilities;
 
-  await personModule.EDIT_PERSON(res);
-
-  if (isNewPerson.value) {
-    let newPerson;
-    const person = personModule.GET_ALL.value.find(
-      x =>
-        x.firstName.toLowerCase() === res.firstName &&
-        x.lastName.toLowerCase() === res.lastName &&
-        x.phone === res.phone
-    );
-    if (person) {
-      newPerson = person;
+    // If new person exists here, person already exists in DB
+    if (isNewPerson.value) {
+      const person = personModule.GET_ALL.value.find(
+        x =>
+          x.firstName.toLowerCase() === res.firstName.toLowerCase() &&
+          x.lastName.toLowerCase() === res.lastName.toLowerCase() &&
+          x.phone === res.phone
+      );
+      if (person) {
+        throw new Error("Person already exists.");
+      }
     }
 
-    if (newPerson) {
-      const id = newPerson.id;
+    await personModule.EDIT_PERSON(res);
+
+    // Run the check again to find new employee's ID
+    if (isNewPerson.value) {
+      const person = personModule.GET_ALL.value.find(
+        x =>
+          x.firstName.toLowerCase() === res.firstName.toLowerCase() &&
+          x.lastName.toLowerCase() === res.lastName.toLowerCase() &&
+          x.phone === res.phone
+      );
+      if (!person) throw new Error();
+
+      const id = person.id;
       window.location.href = `/employees/${id}`;
-    } else {
-      console.log("No new person found.");
-      error = true;
     }
-  }
-  if (error) {
+    toast.add({ severity: "info", summary: "Employee updated.", life: 3000 });
+  } catch {
     toast.add({
       severity: "error",
       summary: "An error occured.",
       detail: "This employee already exists.",
       life: 3000
     });
-  } else {
-    toast.add({ severity: "info", summary: "Employee updated.", life: 3000 });
+  } finally {
+    loadingAddPerson.value = false;
   }
-  loadingAddPerson.value = false;
 };
 
 const initPersonData = () => {
