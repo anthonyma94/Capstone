@@ -17,6 +17,7 @@
           :options="selectOptions"
           optionLabel="name"
           optionValue="value"
+          v-if="!props.id"
         />
       </div>
     </div>
@@ -310,38 +311,5 @@ watch(
     }
   }
 );
-// watch(
-//   () => props.id,
-//   newVal => {
-//     if (newVal) {
-//       const rule = ruleModule.GET_BY_ID(newVal).value;
-//       if (rule) {
-//         const days =
-//           rule.day.day !== undefined && rule.day.day !== null
-//             ? [rule.day.day]
-//             : [];
-//         const date = rule.day.date ? new Date(rule.day.date) : undefined;
-//         const start = dayjs(rule.day.start, "HH:mm").toDate();
-//         const end = dayjs(rule.day.end, "HH:mm").toDate();
-//         const employees = rule.rules.map(item => {
-//           return {
-//             id: item.id,
-//             jobId: item.jobTitle.id,
-//             amount: item.amount.toString()
-//           };
-//         });
-//         formData.value = {
-//           days,
-//           date,
-//           start,
-//           end,
-//           employees
-//         };
-//         type.value = days.length > 0 ? "recurring" : "one-time";
-//         rowsOfEmp.value = employees.length;
-//       }
-//     }
-//   }
-// );
 </script>
 <style scoped lang="postcss"></style>

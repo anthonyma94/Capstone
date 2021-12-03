@@ -36,7 +36,8 @@ const routes = router
   .filter(
     i =>
       Object.keys(i.meta).length === 0 ||
-      i.meta.show === true || i.meta.show === auth.ROLE
+      i.meta.show === true ||
+      (i.meta.show !== false && i.meta.show === auth.ROLE)
   );
 
 const handleLogout = async () => {

@@ -38,7 +38,7 @@ export default class RequestService {
         const start = new DayItem({
             start: params.start.format("HH:mm"),
             end: params.start.format("HH:mm"),
-            date: params.end.format("YYYY-MM-DD") as any
+            date: params.start.format("YYYY-MM-DD") as any
         });
 
         const end = new DayItem({

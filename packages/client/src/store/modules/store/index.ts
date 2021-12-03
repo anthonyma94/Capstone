@@ -85,7 +85,7 @@ export default class StoreModule extends BaseModule<Store> {
                 ...item,
                 start: start.toISOString(),
                 end: end.toISOString(),
-                title: `${start.format("HH:mm")}-${end.format("HH:mm")}`
+                title: `${start.format("hh:mm A")} - ${end.format("hh:mm A")}`
             };
 
             if (payload.personId) {

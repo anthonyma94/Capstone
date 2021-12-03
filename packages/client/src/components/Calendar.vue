@@ -324,8 +324,8 @@ const eventClickEvent = computed(() => {
   const event = events.value?.find(x => x.id === eventClickId.value);
   if (event) {
     return {
-      start: dayjs(event.start as string).format("HH:mm"),
-      end: dayjs(event.end as string).format("HH:mm")
+      start: dayjs(event.start as string).format("hh:mm A"),
+      end: dayjs(event.end as string).format("hh:mm A")
     };
   }
   return;
