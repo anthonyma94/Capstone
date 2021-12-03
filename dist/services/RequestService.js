@@ -42,7 +42,7 @@ let RequestService = RequestService_1 = class RequestService {
         const start = new DayItem_1.default({
             start: params.start.format("HH:mm"),
             end: params.start.format("HH:mm"),
-            date: params.end.format("YYYY-MM-DD")
+            date: params.start.format("YYYY-MM-DD")
         });
         const end = new DayItem_1.default({
             start: params.end.format("HH:mm"),
